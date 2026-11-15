@@ -31,6 +31,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
 			btnChooseSound = new MiniPomidoroWin.Controls.ModernButton();
 			btnResetSound = new MiniPomidoroWin.Controls.ModernButton();
+			btnLanguage = new MiniPomidoroWin.Controls.ModernButton();
 			SuspendLayout();
 			// 
 			// btnChooseSound
@@ -61,12 +62,28 @@
 			btnResetSound.UseVisualStyleBackColor = false;
 			btnResetSound.Click += btnResetSound_Click;
 			// 
+			// btnLanguage
+			// 
+			btnLanguage.BackColor = Color.FromArgb(153, 102, 204);
+			btnLanguage.BorderRadius = 25;
+			btnLanguage.FlatStyle = FlatStyle.Flat;
+			btnLanguage.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+			btnLanguage.ForeColor = Color.White;
+			btnLanguage.Location = new Point(306, 368);
+			btnLanguage.Name = "btnLanguage";
+			btnLanguage.Size = new Size(176, 52);
+			btnLanguage.TabIndex = 3;
+			btnLanguage.Text = "English";
+			btnLanguage.UseVisualStyleBackColor = false;
+			btnLanguage.Click += btnLanguage_Click;
+			// 
 			// SettingsForm
 			// 
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
 			BackColor = SystemColors.ControlDark;
 			ClientSize = new Size(800, 450);
+			Controls.Add(btnLanguage);
 			Controls.Add(btnResetSound);
 			Controls.Add(btnChooseSound);
 			Icon = (Icon)resources.GetObject("$this.Icon");
@@ -78,5 +95,6 @@
 		#endregion
 		private Controls.ModernButton btnChooseSound;
 		private Controls.ModernButton btnResetSound;
+		private Controls.ModernButton btnLanguage;
 	}
 }
