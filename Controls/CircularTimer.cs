@@ -49,7 +49,7 @@ namespace MiniPomidoroWin.Controls
 		/// <summary>
 		/// На паузе ли
 		/// </summary>
-		public bool IsPaused => !timer.Enabled && timeLeft.TotalMilliseconds > 0 && timeLeft != totalTime;
+		public bool IsPaused => !timer.Enabled && timeLeft.TotalMilliseconds > 0;
 
 		/// <summary>
 		/// Конструктор
