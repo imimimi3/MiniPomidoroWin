@@ -22,6 +22,11 @@ namespace MiniPomidoroWin
 		private string _btnPlayPauseText = AppConstants.PlayIcon;
 
 		/// <summary>
+		/// Мини-окно с таймером обратного отсчёта
+		/// </summary>
+		private MiniTimerForm? _miniTimerForm;
+
+		/// <summary>
 		/// Изменение иконки кнопки плей/пауза
 		/// </summary>
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -44,8 +49,6 @@ namespace MiniPomidoroWin
 
 			// Настройка темы формы
 			this.BackColor = Theme.FormBackground;
-
-			circularTimer.TimeFinished += CircularTimer_TimeFinished;
 
 			btnPlayPause.DataBindings.Add(
 			   nameof(btnPlayPause.Text),
@@ -98,12 +101,85 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Окончание таймера - воспроизведение звука
+		/// Обработка нажатия кнопки Старт: запуск таймера в мини-окне
 		/// </summary>
-		private void CircularTimer_TimeFinished(object? sender, EventArgs e)
+		private void btnPlayPause_Click(object sender, EventArgs e)
+		{
+			int seconds = (Convert.ToInt32(minutesNum.Value) * 60) + Convert.ToInt32(secondsNum.Value);
+
+			if (seconds <= 0)
+			{
+				MessageBox.Show(AppStrings.MainForm_TimeZeroWarning, AppStrings.Common_WarningTitle);
+				return;
+			}
+
+			_audioService.Stop();
+
+			this.ShowMiniTimer(TimeSpan.FromSeconds(seconds));
+		}
+
+		/// <summary>
+		/// Показ мини-окна и скрытие главной формы
+		/// </summary>
+		private void ShowMiniTimer(TimeSpan duration)
+		{
+			if (_miniTimerForm != null && !_miniTimerForm.IsDisposed)
+			{
+				_miniTimerForm.Activate();
+				return;
+			}
+
+			Screen screen = Screen.FromControl(this);
+
+			_miniTimerForm = new MiniTimerForm(screen);
+			_miniTimerForm.TimerFinished += MiniTimerForm_TimerFinished;
+			_miniTimerForm.FormClosed += MiniTimerForm_FormClosed;
+
+			PlayPauseButtonText = AppConstants.PauseIcon;
+
+			this.Hide();
+
+			_miniTimerForm.Show();
+			_miniTimerForm.StartTimer(duration);
+		}
+
+		/// <summary>
+		/// Окончание таймера в мини-окне
+		/// </summary>
+		private void MiniTimerForm_TimerFinished(object? sender, EventArgs e)
 		{
 			PlayPauseButtonText = AppConstants.PlayIcon;
+			this.PlayEndSound();
+		}
 
+		/// <summary>
+		/// Возврат на главную форму после закрытия мини-окна
+		/// </summary>
+		private void MiniTimerForm_FormClosed(object? sender, FormClosedEventArgs e)
+		{
+			if (_miniTimerForm != null)
+			{
+				_miniTimerForm.TimerFinished -= MiniTimerForm_TimerFinished;
+				_miniTimerForm.FormClosed -= MiniTimerForm_FormClosed;
+				_miniTimerForm = null;
+			}
+
+			if (this.IsDisposed || this.Disposing)
+			{
+				return;
+			}
+
+			PlayPauseButtonText = AppConstants.PlayIcon;
+
+			this.Show();
+			this.Activate();
+		}
+
+		/// <summary>
+		/// Воспроизведение мелодии окончания таймера
+		/// </summary>
+		private void PlayEndSound()
+		{
 			if (!string.IsNullOrEmpty(SettingsService.CustomSoundPath) && File.Exists(SettingsService.CustomSoundPath))
 			{
 				try
@@ -122,37 +198,6 @@ namespace MiniPomidoroWin
 			else
 			{
 				_audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
-			}
-		}
-
-		/// <summary>
-		/// Обработка нажатия кнопки Плей/пауза
-		/// </summary>
-		private void btnPlayPause_Click(object sender, EventArgs e)
-		{
-			if (circularTimer.IsRunning)
-			{
-				circularTimer.Pause();
-				PlayPauseButtonText = AppConstants.PlayIcon;
-			}
-			else if (circularTimer.IsPaused)
-			{
-				circularTimer.Resume();
-				PlayPauseButtonText = AppConstants.PauseIcon;
-			}
-			else
-			{
-				int seconds = (Convert.ToInt32(minutesNum.Value) * 60) + Convert.ToInt32(secondsNum.Value);
-
-				if (seconds <= 0)
-				{
-					MessageBox.Show(AppStrings.MainForm_TimeZeroWarning, AppStrings.Common_WarningTitle);
-					return;
-				}
-
-				circularTimer.Start(TimeSpan.FromSeconds(seconds));
-				PlayPauseButtonText = AppConstants.PauseIcon;
-				_audioService.Stop();
 			}
 		}
 
