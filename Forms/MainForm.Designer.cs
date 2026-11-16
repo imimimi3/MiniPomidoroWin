@@ -129,7 +129,7 @@ namespace MiniPomidoroWin
 			btnTimerStop.ForeColor = Color.White;
 			btnTimerStop.Location = new Point(397, 189);
 			btnTimerStop.Name = "btnTimerStop";
-			btnTimerStop.Size = new Size(100, 100);
+			btnTimerStop.Size = new Size(112, 100);
 			btnTimerStop.TabIndex = 13;
 			btnTimerStop.Text = "stop";
 			btnTimerStop.UseVisualStyleBackColor = false;

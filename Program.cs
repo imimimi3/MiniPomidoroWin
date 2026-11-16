@@ -1,4 +1,5 @@
 using MiniPomidoroWin.Forms;
+using MiniPomidoroWin.Service;
 
 namespace MiniPomidoroWin
 {
@@ -13,6 +14,10 @@ namespace MiniPomidoroWin
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize();
+
+			// Применение сохранённого языка интерфейса до создания форм
+			LocalizationService.Instance.Initialize();
+
 			Application.Run(new MainForm());
 		}
 	}

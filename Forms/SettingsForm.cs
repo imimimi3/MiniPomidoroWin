@@ -1,19 +1,14 @@
-﻿using MiniPomidoroWin.Service;
+﻿using MiniPomidoroWin.Forms.Localization;
+using MiniPomidoroWin.Service;
 using MiniPomidoroWin.Themes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace MiniPomidoroWin.Forms
 {
 	public partial class SettingsForm : Form
 	{
+		/// <summary>
+		/// Путь к пользовательской мелодии
+		/// </summary>
 		public static string? CustomSoundPath
 		{
 			get => Properties.Settings.Default.CustomSoundPath;
@@ -24,17 +19,62 @@ namespace MiniPomidoroWin.Forms
 			}
 		}
 
+		/// <summary>
+		/// Сброс выбранной музыки на стандартную
+		/// </summary>
 		public static void ResetCustomSound()
 		{
 			CustomSoundPath = null;
 		}
+
+		/// <summary>
+		/// Сервис звука
+		/// </summary>
 		private readonly AudioService _audioService = new AudioService();
 
+		/// <summary>
+		/// Конструктор формы
+		/// </summary>
 		public SettingsForm()
 		{
 			InitializeComponent();
 
 			this.BackColor = Theme.FormBackground;
+
+			LocalizationService.Instance.LanguageChanged += LocalizationService_LanguageChanged;
+
+			this.ApplyLocalization();
+		}
+
+		/// <summary>
+		/// Отписка от события смены языка
+		/// </summary>
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			LocalizationService.Instance.LanguageChanged -= LocalizationService_LanguageChanged;
+
+			_audioService.Dispose();
+
+			base.OnFormClosed(e);
+		}
+
+		/// <summary>
+		/// Смена языка интерфейса
+		/// </summary>
+		private void LocalizationService_LanguageChanged(object? sender, EventArgs e)
+		{
+			this.ApplyLocalization();
+		}
+
+		/// <summary>
+		/// Применение локализованных строк к элементам формы
+		/// </summary>
+		private void ApplyLocalization()
+		{
+			this.Text = AppStrings.SettingsForm_Title;
+			btnLanguage.Text = AppStrings.SettingsForm_LanguageButton;
+			btnChooseSound.Text = AppStrings.SettingsForm_ChooseSoundButton;
+			btnResetSound.Text = AppStrings.SettingsForm_ResetButton;
 		}
 
 		/// <summary>
@@ -42,23 +82,29 @@ namespace MiniPomidoroWin.Forms
 		/// </summary>
 		private void btnChooseSound_Click(object sender, EventArgs e)
 		{
-			using (OpenFileDialog ofd = new OpenFileDialog { Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*" })
+			using (OpenFileDialog ofd = new OpenFileDialog { Filter = AppStrings.SettingsForm_SoundFileFilter })
 			{
 				if (ofd.ShowDialog() == DialogResult.OK)
 				{
 					CustomSoundPath = ofd.FileName;
 
-					Properties.Settings.Default.CustomSoundPath = CustomSoundPath;
-					Properties.Settings.Default.Save();
-
 					try
 					{
-						_audioService.PlayCustomFile(CustomSoundPath);
-						MessageBox.Show("Пользовательский звук выбран и сохранен.", "Настройки звука", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						_audioService.PlayCustomFile(ofd.FileName);
+
+						MessageBox.Show(
+							AppStrings.SettingsForm_SoundSelected,
+							AppStrings.SettingsForm_SoundDialogTitle,
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Information);
 					}
 					catch (Exception ex)
 					{
-						MessageBox.Show($"Не удалось воспроизвести файл: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show(
+							string.Format(AppStrings.SettingsForm_SoundPlayError, ex.Message),
+							AppStrings.Common_ErrorTitle,
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error);
 					}
 				}
 			}
@@ -71,7 +117,19 @@ namespace MiniPomidoroWin.Forms
 		{
 			ResetCustomSound();
 
-			MessageBox.Show("Пользовательский звук сброшен.", "Настройки звука", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			MessageBox.Show(
+				AppStrings.SettingsForm_SoundReset,
+				AppStrings.SettingsForm_SoundDialogTitle,
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Information);
+		}
+
+		/// <summary>
+		/// Переключение языка интерфейса
+		/// </summary>
+		private void btnLanguage_Click(object sender, EventArgs e)
+		{
+			LocalizationService.Instance.ToggleLanguage();
 		}
 	}
 }

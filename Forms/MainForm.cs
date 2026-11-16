@@ -1,5 +1,6 @@
 using MiniPomidoroWin.Constants;
 using MiniPomidoroWin.Forms;
+using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Service;
 using MiniPomidoroWin.Themes;
 using NAudio.Wave;
@@ -53,14 +54,48 @@ namespace MiniPomidoroWin
 			   false,
 			   DataSourceUpdateMode.OnPropertyChanged
 		   );
+
+			LocalizationService.Instance.LanguageChanged += LocalizationService_LanguageChanged;
+
+			this.ApplyLocalization();
 		}
 
 		/// <summary>
 		/// Событие изменения свойств
 		/// </summary>
 		public event PropertyChangedEventHandler? PropertyChanged;
+
 		protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+		/// <summary>
+		/// Отписка от события смены языка
+		/// </summary>
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			LocalizationService.Instance.LanguageChanged -= LocalizationService_LanguageChanged;
+			base.OnFormClosed(e);
+		}
+
+		/// <summary>
+		/// Смена языка интерфейса
+		/// </summary>
+		private void LocalizationService_LanguageChanged(object? sender, EventArgs e)
+		{
+			this.ApplyLocalization();
+		}
+
+		/// <summary>
+		/// Применение локализованных строк к элементам формы
+		/// </summary>
+		private void ApplyLocalization()
+		{
+			this.Text = AppStrings.MainForm_Title;
+			notifyIcon1.Text = AppStrings.MainForm_Title;
+			lblMinutes.Text = AppStrings.MainForm_MinutesLabel;
+			lblSeconds.Text = AppStrings.MainForm_SecondsLabel;
+			btnTimerStop.Text = AppStrings.MainForm_StopButton;
+		}
 
 		/// <summary>
 		/// Окончание таймера - воспроизведение звука
@@ -77,7 +112,10 @@ namespace MiniPomidoroWin
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"Не удалось воспроизвести выбранный файл: {ex.Message}\nБудет использован стандартный звук.", "Ошибка");
+					MessageBox.Show(
+						string.Format(AppStrings.MainForm_AudioPlaybackError, ex.Message),
+						AppStrings.Common_ErrorTitle);
+
 					_audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
 				}
 			}
@@ -108,7 +146,7 @@ namespace MiniPomidoroWin
 
 				if (seconds <= 0)
 				{
-					MessageBox.Show("Установите время больше 0!", "Внимание");
+					MessageBox.Show(AppStrings.MainForm_TimeZeroWarning, AppStrings.Common_WarningTitle);
 					return;
 				}
 
