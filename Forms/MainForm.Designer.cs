@@ -114,7 +114,7 @@ namespace MiniPomidoroWin
 			// 
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
-			BackColor = SystemColors.ControlDark;
+			BackColor = Color.FromArgb(34, 40, 49);
 			ClientSize = new Size(540, 400);
 			Controls.Add(btnInfo);
 			Controls.Add(btnSettings);

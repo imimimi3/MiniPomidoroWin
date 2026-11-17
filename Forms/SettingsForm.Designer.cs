@@ -52,6 +52,7 @@
 			// lblCurrentSound
 			// 
 			lblCurrentSound.AutoEllipsis = true;
+			lblCurrentSound.AutoSize = false;
 			lblCurrentSound.Font = new Font("Segoe UI", 12F);
 			lblCurrentSound.ForeColor = Color.White;
 			lblCurrentSound.Location = new Point(40, 78);
@@ -106,7 +107,7 @@
 			lblLanguageSection.AutoSize = true;
 			lblLanguageSection.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
 			lblLanguageSection.ForeColor = Color.FromArgb(138, 147, 165);
-			lblLanguageSection.Location = new Point(30, 342);
+			lblLanguageSection.Location = new Point(40, 342);
 			lblLanguageSection.Name = "lblLanguageSection";
 			lblLanguageSection.Size = new Size(275, 41);
 			lblLanguageSection.TabIndex = 5;
@@ -121,7 +122,7 @@
 			btnLanguage.FlatStyle = FlatStyle.Flat;
 			btnLanguage.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
 			btnLanguage.ForeColor = Color.White;
-			btnLanguage.Location = new Point(30, 400);
+			btnLanguage.Location = new Point(40, 400);
 			btnLanguage.Name = "btnLanguage";
 			btnLanguage.Size = new Size(180, 64);
 			btnLanguage.TabIndex = 6;

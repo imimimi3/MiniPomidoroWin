@@ -6,31 +6,13 @@ using System.IO;
 
 namespace MiniPomidoroWin.Forms
 {
-	public partial class SettingsForm : Form
+	/// <summary>
+	/// Форма настроек приложения
+	/// </summary>
+	public partial class SettingsForm : LocalizedForm
 	{
 		/// <summary>
-		/// Путь к пользовательской мелодии
-		/// </summary>
-		public static string? CustomSoundPath
-		{
-			get => Properties.Settings.Default.CustomSoundPath;
-			set
-			{
-				Properties.Settings.Default.CustomSoundPath = value;
-				Properties.Settings.Default.Save();
-			}
-		}
-
-		/// <summary>
-		/// Сброс выбранной музыки на стандартную
-		/// </summary>
-		public static void ResetCustomSound()
-		{
-			CustomSoundPath = null;
-		}
-
-		/// <summary>
-		/// Сервис звука
+		/// Сервис предпросмотра мелодии окончания
 		/// </summary>
 		private readonly AudioService _audioService = new AudioService();
 
@@ -46,35 +28,24 @@ namespace MiniPomidoroWin.Forms
 			this.ApplySecondaryStyle(this.btnResetSound);
 			this.ApplySecondaryStyle(this.btnLanguage);
 
-			LocalizationService.Instance.LanguageChanged += this.LocalizationService_LanguageChanged;
-
 			this.ApplyLocalization();
 		}
 
 		/// <summary>
-		/// Отписка от события смены языка
+		/// Остановка предпросмотра и освобождение ресурсов
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
-			LocalizationService.Instance.LanguageChanged -= this.LocalizationService_LanguageChanged;
-
-			_audioService.Dispose();
+			// Настройки можно закрыть с играющим предпросмотром
+			this._audioService.Dispose();
 
 			base.OnFormClosed(e);
 		}
 
 		/// <summary>
-		/// Смена языка интерфейса
-		/// </summary>
-		private void LocalizationService_LanguageChanged(object? sender, EventArgs e)
-		{
-			this.ApplyLocalization();
-		}
-
-		/// <summary>
 		/// Применение локализованных строк к элементам формы
 		/// </summary>
-		private void ApplyLocalization()
+		protected override void ApplyLocalization()
 		{
 			this.Text = AppStrings.SettingsForm_Title;
 
@@ -104,7 +75,7 @@ namespace MiniPomidoroWin.Forms
 		/// </summary>
 		private void UpdateSoundLabel()
 		{
-			string? path = CustomSoundPath;
+			string? path = SettingsService.CustomSoundPath;
 
 			this.lblCurrentSound.Text = string.IsNullOrEmpty(path)
 				? AppStrings.SettingsForm_DefaultSound
@@ -112,31 +83,28 @@ namespace MiniPomidoroWin.Forms
 		}
 
 		/// <summary>
-		/// Обработка нажатия на кнопку выбора мелодии
+		/// Выбор мелодии окончания с предпросмотром
 		/// </summary>
 		private void btnChooseSound_Click(object? sender, EventArgs e)
 		{
-			using (OpenFileDialog ofd = new OpenFileDialog { Filter = AppStrings.SettingsForm_SoundFileFilter })
+			using (OpenFileDialog ofd = new OpenFileDialog
+			{
+				Title = AppStrings.SettingsForm_SoundDialogTitle,
+				Filter = AppStrings.SettingsForm_SoundFileFilter
+			})
 			{
 				if (ofd.ShowDialog(this) != DialogResult.OK)
 				{
 					return;
 				}
 
-				CustomSoundPath = ofd.FileName;
+				string fileName = ofd.FileName;
 
 				try
 				{
-					_audioService.PlayCustomFile(ofd.FileName);
-
-					this.UpdateSoundLabel();
-
-					MessageBox.Show(
-						this,
-						AppStrings.SettingsForm_SoundSelected,
-						AppStrings.SettingsForm_SoundDialogTitle,
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information);
+					// Сначала предпросмотр: путь сохраняем только для рабочего файла,
+					// иначе каждый конец таймера уходил бы в ошибку воспроизведения
+					this._audioService.PlayCustomFile(fileName);
 				}
 				catch (Exception ex)
 				{
@@ -146,16 +114,32 @@ namespace MiniPomidoroWin.Forms
 						AppStrings.Common_ErrorTitle,
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
+
+					return;
 				}
+
+				SettingsService.CustomSoundPath = fileName;
+
+				this.UpdateSoundLabel();
+
+				MessageBox.Show(
+					this,
+					AppStrings.SettingsForm_SoundSelected,
+					AppStrings.SettingsForm_SoundDialogTitle,
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
 			}
 		}
 
 		/// <summary>
-		/// Обработка нажатия на кнопку сброса выбранной мелодии
+		/// Сброс выбранной мелодии на стандартную
 		/// </summary>
 		private void btnResetSound_Click(object? sender, EventArgs e)
 		{
-			ResetCustomSound();
+			// Предпросмотр должен замолчать сразу, а не доиграть после сброса
+			this._audioService.Stop();
+
+			SettingsService.ResetCustomSound();
 
 			this.UpdateSoundLabel();
 

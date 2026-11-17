@@ -9,7 +9,7 @@ namespace MiniPomidoroWin.Forms
 	/// <summary>
 	/// Мини-окно с таймером обратного отсчёта
 	/// </summary>
-	public partial class MiniTimerForm : Form
+	public partial class MiniTimerForm : LocalizedForm
 	{
 		/// <summary>
 		/// Радиус скругления окна
@@ -35,12 +35,13 @@ namespace MiniPomidoroWin.Forms
 		{
 			InitializeComponent();
 
-			_screen = screen;
+			this._screen = screen;
 
 			this.BackColor = Theme.FormBackground;
-			this.Text = AppStrings.MainForm_Title;
 
 			this.circularTimer.TimeFinished += this.CircularTimer_TimeFinished;
+
+			this.ApplyLocalization();
 		}
 
 		/// <summary>
@@ -58,13 +59,21 @@ namespace MiniPomidoroWin.Forms
 		}
 
 		/// <summary>
+		/// Применение локализованных строк к элементам формы
+		/// </summary>
+		protected override void ApplyLocalization()
+		{
+			this.Text = AppStrings.MainForm_Title;
+		}
+
+		/// <summary>
 		/// Позиционирование окна и скругление углов
 		/// </summary>
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
 
-			Rectangle area = _screen.WorkingArea;
+			Rectangle area = this._screen.WorkingArea;
 			int margin = (int)Math.Round(AppConstants.MiniFormScreenMargin * this.DeviceDpi / 96.0);
 
 			this.Location = new Point(
@@ -80,6 +89,7 @@ namespace MiniPomidoroWin.Forms
 		protected override void OnResize(EventArgs e)
 		{
 			base.OnResize(e);
+
 			this.UpdateRoundedRegion();
 		}
 
@@ -96,6 +106,7 @@ namespace MiniPomidoroWin.Forms
 			}
 
 			e.Handled = true;
+
 			this.StopTimer();
 		}
 
@@ -105,6 +116,7 @@ namespace MiniPomidoroWin.Forms
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
 			this.circularTimer.TimeFinished -= this.CircularTimer_TimeFinished;
+
 			base.OnFormClosed(e);
 		}
 

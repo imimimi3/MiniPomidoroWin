@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace MiniPomidoroWin.Service
 {
-	internal class SettingsService
+	/// <summary>
+	/// Пользовательские настройки приложения
+	/// </summary>
+	internal static class SettingsService
 	{
 		/// <summary>
-		/// Сохранение пути к мелодии в настройки
+		/// Путь к выбранной пользователем мелодии окончания (null — стандартный звук)
 		/// </summary>
 		public static string? CustomSoundPath
 		{
@@ -22,7 +21,20 @@ namespace MiniPomidoroWin.Service
 		}
 
 		/// <summary>
-		/// Сброс выбранной музыки на стандартную
+		/// Выбрана ли мелодия, файл которой существует на диске
+		/// </summary>
+		public static bool HasCustomSound
+		{
+			get
+			{
+				string? path = CustomSoundPath;
+
+				return !string.IsNullOrWhiteSpace(path) && File.Exists(path);
+			}
+		}
+
+		/// <summary>
+		/// Сброс выбранной мелодии на стандартную
 		/// </summary>
 		public static void ResetCustomSound()
 		{

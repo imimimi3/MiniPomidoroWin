@@ -123,6 +123,9 @@
   <data name="Common_WarningTitle" xml:space="preserve">
     <value>Внимание</value>
   </data>
+  <data name="InfoForm_AppName" xml:space="preserve">
+    <value>MiniPomidoro</value>
+  </data>
   <data name="InfoForm_HowToUse" xml:space="preserve">
     <value>Как пользоваться:</value>
   </data>
@@ -143,20 +146,11 @@
     <value>Не удалось воспроизвести выбранный файл: {0} 
 Будет использован стандартный звук.</value>
   </data>
-  <data name="MainForm_MinutesLabel" xml:space="preserve">
-    <value>Минуты</value>
-  </data>
   <data name="MainForm_MinutesShort" xml:space="preserve">
     <value>мин</value>
   </data>
-  <data name="MainForm_SecondsLabel" xml:space="preserve">
-    <value>Секунды</value>
-  </data>
   <data name="MainForm_SecondsShort" xml:space="preserve">
     <value>сек</value>
-  </data>
-  <data name="MainForm_StopButton" xml:space="preserve">
-    <value>Стоп</value>
   </data>
   <data name="MainForm_TimeZeroWarning" xml:space="preserve">
     <value>Установите время больше 0!</value>

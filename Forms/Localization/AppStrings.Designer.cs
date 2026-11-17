@@ -79,6 +79,15 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на MiniPomidoro.
+        /// </summary>
+        internal static string InfoForm_AppName {
+            get {
+                return ResourceManager.GetString("InfoForm_AppName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Как пользоваться:.
         /// </summary>
         internal static string InfoForm_HowToUse {
@@ -129,15 +138,6 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Минуты.
-        /// </summary>
-        internal static string MainForm_MinutesLabel {
-            get {
-                return ResourceManager.GetString("MainForm_MinutesLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Ищет локализованную строку, похожую на мин.
         /// </summary>
         internal static string MainForm_MinutesShort {
@@ -147,29 +147,11 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Секунды.
-        /// </summary>
-        internal static string MainForm_SecondsLabel {
-            get {
-                return ResourceManager.GetString("MainForm_SecondsLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Ищет локализованную строку, похожую на сек.
         /// </summary>
         internal static string MainForm_SecondsShort {
             get {
                 return ResourceManager.GetString("MainForm_SecondsShort", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Стоп.
-        /// </summary>
-        internal static string MainForm_StopButton {
-            get {
-                return ResourceManager.GetString("MainForm_StopButton", resourceCulture);
             }
         }
         
