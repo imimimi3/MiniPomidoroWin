@@ -79,6 +79,28 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Как пользоваться:.
+        /// </summary>
+        internal static string InfoForm_HowToUse {
+            get {
+                return ResourceManager.GetString("InfoForm_HowToUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на 1. Задайте время: минуты и секунды.
+        ///2. Нажмите ▶ — откроется мини-таймер.
+        ///3. Пауза и стоп — на мини-окне.
+        ///4. Esc — остановить и вернуться.
+        ///5. Звук и язык — в настройках..
+        /// </summary>
+        internal static string InfoForm_Instructions {
+            get {
+                return ResourceManager.GetString("InfoForm_Instructions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Спасибо за использование MiniPomidoro).
         /// </summary>
         internal static string InfoForm_ThanksLabel {
@@ -97,8 +119,8 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Не удалось воспроизвести выбранный файл: {0}
-        ///	Будет использован стандартный звук..
+        ///   Ищет локализованную строку, похожую на Не удалось воспроизвести выбранный файл: {0} 
+        ///Будет использован стандартный звук..
         /// </summary>
         internal static string MainForm_AudioPlaybackError {
             get {
@@ -116,11 +138,29 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на мин.
+        /// </summary>
+        internal static string MainForm_MinutesShort {
+            get {
+                return ResourceManager.GetString("MainForm_MinutesShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Секунды.
         /// </summary>
         internal static string MainForm_SecondsLabel {
             get {
                 return ResourceManager.GetString("MainForm_SecondsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на сек.
+        /// </summary>
+        internal static string MainForm_SecondsShort {
+            get {
+                return ResourceManager.GetString("MainForm_SecondsShort", resourceCulture);
             }
         }
         
@@ -161,11 +201,29 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Стандартный звук.
+        /// </summary>
+        internal static string SettingsForm_DefaultSound {
+            get {
+                return ResourceManager.GetString("SettingsForm_DefaultSound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Русский.
         /// </summary>
         internal static string SettingsForm_LanguageButton {
             get {
                 return ResourceManager.GetString("SettingsForm_LanguageButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Язык интерфейса.
+        /// </summary>
+        internal static string SettingsForm_LanguageSection {
+            get {
+                return ResourceManager.GetString("SettingsForm_LanguageSection", resourceCulture);
             }
         }
         
@@ -211,6 +269,15 @@ namespace MiniPomidoroWin.Forms.Localization {
         internal static string SettingsForm_SoundReset {
             get {
                 return ResourceManager.GetString("SettingsForm_SoundReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Звук окончания.
+        /// </summary>
+        internal static string SettingsForm_SoundSection {
+            get {
+                return ResourceManager.GetString("SettingsForm_SoundSection", resourceCulture);
             }
         }
         

@@ -123,6 +123,16 @@
   <data name="Common_WarningTitle" xml:space="preserve">
     <value>Внимание</value>
   </data>
+  <data name="InfoForm_HowToUse" xml:space="preserve">
+    <value>Как пользоваться:</value>
+  </data>
+  <data name="InfoForm_Instructions" xml:space="preserve">
+    <value>1. Задайте время: минуты и секунды.
+2. Нажмите ▶ — откроется мини-таймер.
+3. Пауза и стоп — на мини-окне.
+4. Esc — остановить и вернуться.
+5. Звук и язык — в настройках.</value>
+  </data>
   <data name="InfoForm_ThanksLabel" xml:space="preserve">
     <value>Спасибо за использование MiniPomidoro)</value>
   </data>
@@ -130,14 +140,20 @@
     <value>Информация</value>
   </data>
   <data name="MainForm_AudioPlaybackError" xml:space="preserve">
-    <value>Не удалось воспроизвести выбранный файл: {0}
-	Будет использован стандартный звук.</value>
+    <value>Не удалось воспроизвести выбранный файл: {0} 
+Будет использован стандартный звук.</value>
   </data>
   <data name="MainForm_MinutesLabel" xml:space="preserve">
     <value>Минуты</value>
   </data>
+  <data name="MainForm_MinutesShort" xml:space="preserve">
+    <value>мин</value>
+  </data>
   <data name="MainForm_SecondsLabel" xml:space="preserve">
     <value>Секунды</value>
+  </data>
+  <data name="MainForm_SecondsShort" xml:space="preserve">
+    <value>сек</value>
   </data>
   <data name="MainForm_StopButton" xml:space="preserve">
     <value>Стоп</value>
@@ -151,8 +167,14 @@
   <data name="SettingsForm_ChooseSoundButton" xml:space="preserve">
     <value>Выбор мелодии окончания</value>
   </data>
+  <data name="SettingsForm_DefaultSound" xml:space="preserve">
+    <value>Стандартный звук</value>
+  </data>
   <data name="SettingsForm_LanguageButton" xml:space="preserve">
     <value>Русский</value>
+  </data>
+  <data name="SettingsForm_LanguageSection" xml:space="preserve">
+    <value>Язык интерфейса</value>
   </data>
   <data name="SettingsForm_ResetButton" xml:space="preserve">
     <value>Сброс</value>
@@ -168,6 +190,9 @@
   </data>
   <data name="SettingsForm_SoundReset" xml:space="preserve">
     <value>Пользовательский звук сброшен.</value>
+  </data>
+  <data name="SettingsForm_SoundSection" xml:space="preserve">
+    <value>Звук окончания</value>
   </data>
   <data name="SettingsForm_SoundSelected" xml:space="preserve">
     <value>Пользовательский звук выбран и сохранен.</value>

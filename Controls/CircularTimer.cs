@@ -8,14 +8,24 @@ using MiniPomidoroWin.Themes;
 namespace MiniPomidoroWin.Controls
 {
 	/// <summary>
-	/// Красивый круговой таймер
+	/// Круговой таймер обратного отсчёта
 	/// </summary>
 	public class CircularTimer : Control
 	{
 		/// <summary>
+		/// Доля диаметра, которую занимает высота шрифта отсчёта
+		/// </summary>
+		private const float TextScale = 0.22f;
+
+		/// <summary>
 		/// Основной таймер
 		/// </summary>
-		private System.Windows.Forms.Timer timer;
+		private readonly System.Windows.Forms.Timer timer;
+
+		/// <summary>
+		/// Форматирование текста по центру без переноса
+		/// </summary>
+		private readonly StringFormat textFormat;
 
 		/// <summary>
 		/// Общее время
@@ -23,22 +33,50 @@ namespace MiniPomidoroWin.Controls
 		private TimeSpan totalTime;
 
 		/// <summary>
-		/// Прошедшее время
+		/// Оставшееся время
 		/// </summary>
 		private TimeSpan timeLeft;
 
 		/// <summary>
-		/// Толщина
+		/// Толщина кольца
+		/// </summary>
+		private int thickness = 15;
+
+		/// <summary>
+		/// Толщина кольца
 		/// </summary>
 		[DefaultValue(15)]
-		public int Thickness { get; set; } = 15;
+		[Category("Appearance")]
+		public int Thickness
+		{
+			get => thickness;
+			set
+			{
+				int newValue = Math.Max(1, value);
+
+				if (thickness == newValue)
+				{
+					return;
+				}
+
+				thickness = newValue;
+				Invalidate();
+			}
+		}
 
 		/// <summary>
 		/// Событие окончания таймера
 		/// </summary>
 		public event EventHandler? TimeFinished;
 
+		/// <summary>
+		/// Оставшееся время
+		/// </summary>
 		public TimeSpan TimeLeft => timeLeft;
+
+		/// <summary>
+		/// Общее время
+		/// </summary>
 		public TimeSpan TotalTime => totalTime;
 
 		/// <summary>
@@ -56,11 +94,23 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public CircularTimer()
 		{
-			SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+			SetStyle(
+				ControlStyles.AllPaintingInWmPaint |
+				ControlStyles.OptimizedDoubleBuffer |
+				ControlStyles.UserPaint |
+				ControlStyles.ResizeRedraw,
+				true);
 
-			timer = new System.Windows.Forms.Timer();
-			timer.Interval = 100;
+			textFormat = new StringFormat
+			{
+				Alignment = StringAlignment.Center,
+				LineAlignment = StringAlignment.Center,
+				FormatFlags = StringFormatFlags.NoWrap
+			};
+
+			timer = new System.Windows.Forms.Timer { Interval = 100 };
 			timer.Tick += Timer_Tick;
+
 			Size = new Size(200, 200);
 		}
 
@@ -89,7 +139,9 @@ namespace MiniPomidoroWin.Controls
 		public void Resume()
 		{
 			if (timeLeft.TotalMilliseconds > 0)
+			{
 				timer.Start();
+			}
 		}
 
 		/// <summary>
@@ -114,22 +166,26 @@ namespace MiniPomidoroWin.Controls
 			{
 				timeLeft = TimeSpan.Zero;
 				timer.Stop();
+				Invalidate();
 				TimeFinished?.Invoke(this, EventArgs.Empty);
+				return;
 			}
 
 			Invalidate();
 		}
 
 		/// <summary>
-		/// 
+		/// Освобождение ресурсов
 		/// </summary>
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-				timer?.Stop();
-				timer?.Dispose();
+				timer.Stop();
+				timer.Dispose();
+				textFormat.Dispose();
 			}
+
 			base.Dispose(disposing);
 		}
 
@@ -139,51 +195,105 @@ namespace MiniPomidoroWin.Controls
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
-			Graphics g = e.Graphics;
 
-			// Включаем сглаживание (чтобы круги были ровными, без "лесенок")
+			Graphics g = e.Graphics;
+			int diameter = Math.Min(Width, Height);
+
+			if (diameter <= thickness * 2 + 8)
+			{
+				return;
+			}
+
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 			g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-			// 1. Рисуем фоновую дорожку (серый круг)
-			Rectangle rect = new Rectangle(Thickness / 2, Thickness / 2, Width - Thickness, Height - Thickness);
+			Rectangle rect = new Rectangle(
+				(Width - diameter) / 2 + thickness / 2,
+				(Height - diameter) / 2 + thickness / 2,
+				diameter - thickness,
+				diameter - thickness);
 
-			using (Pen trackPen = new Pen(Theme.TimerTrack, Thickness))
+			// Фоновая дорожка
+			using (Pen trackPen = new Pen(Theme.TimerTrack, thickness))
 			{
 				g.DrawEllipse(trackPen, rect);
 			}
 
-			// 2. Рисуем прогресс (цветной круг)
-			if (totalTime.TotalMilliseconds > 0)
+			// Прогресс
+			if (totalTime > TimeSpan.Zero)
 			{
 				float progress = (float)(timeLeft.TotalMilliseconds / totalTime.TotalMilliseconds);
-				float sweepAngle = - progress * 360f;
 
-				using (Pen progressPen = new Pen(Theme.TimerProgress, Thickness))
+				if (progress > 0.001f)
 				{
-					progressPen.StartCap = LineCap.Round;
-					progressPen.EndCap = LineCap.Round;
+					using (Pen progressPen = new Pen(Theme.TimerProgress, thickness))
+					{
+						progressPen.StartCap = LineCap.Round;
+						progressPen.EndCap = LineCap.Round;
 
-					// Начинаем рисовать с 12 часов (угол -90 градусов)
-					g.DrawArc(progressPen, rect, -90, sweepAngle);
+						g.DrawArc(progressPen, rect, -90f, -progress * 360f);
+					}
 				}
 			}
 
-			// 3. Рисуем текст (оставшееся время)
-			string timeText = timeLeft.ToString(@"mm\:ss");
-			if (timeLeft.TotalHours >= 1) timeText = timeLeft.ToString(@"hh\:mm\:ss");
+			// Текст
+			string timeText = this.FormatTime(timeLeft);
 
-			using (Font font = new Font("Segoe UI", 28, FontStyle.Bold))
+			using (Font font = this.CreateTimeFont(g, timeText, diameter))
 			using (Brush textBrush = new SolidBrush(Theme.TextColor))
-			using (StringFormat sf = new StringFormat())
 			{
-				sf.Alignment = StringAlignment.Center;
-				sf.LineAlignment = StringAlignment.Center;
-
-				RectangleF textRect = new RectangleF(0, 0, Width, Height);
-				g.DrawString(timeText, font, textBrush, textRect, sf);
+				g.DrawString(
+					timeText,
+					font,
+					textBrush,
+					new RectangleF(0f, 0f, Width, Height),
+					textFormat);
 			}
 		}
 
+		/// <summary>
+		/// Форматирование оставшегося времени
+		/// </summary>
+		private string FormatTime(TimeSpan value)
+		{
+			return value.TotalHours >= 1
+				? value.ToString(@"hh\:mm\:ss")
+				: value.ToString(@"mm\:ss");
+		}
+
+		/// <summary>
+		/// Шрифт отсчёта, подобранный под размер круга и длину строки
+		/// </summary>
+		private Font CreateTimeFont(Graphics g, string text, int diameter)
+		{
+			// Размер в пикселях: шрифт масштабируется вместе с контролом, а не с DPI
+			float size = Math.Max(8f, diameter * TextScale);
+
+			Font font = new Font("Segoe UI", size, FontStyle.Bold, GraphicsUnit.Pixel);
+
+			float maxWidth = diameter - thickness * 2 - diameter * 0.08f;
+			float maxHeight = diameter - thickness * 2 - diameter * 0.12f;
+
+			SizeF measured = g.MeasureString(text, font);
+			float factor = 1f;
+
+			if (maxWidth > 0f && measured.Width > maxWidth)
+			{
+				factor = Math.Min(factor, maxWidth / measured.Width);
+			}
+
+			if (maxHeight > 0f && measured.Height > maxHeight)
+			{
+				factor = Math.Min(factor, maxHeight / measured.Height);
+			}
+
+			if (factor < 1f)
+			{
+				font.Dispose();
+				font = new Font("Segoe UI", Math.Max(6f, size * factor), FontStyle.Bold, GraphicsUnit.Pixel);
+			}
+
+			return font;
+		}
 	}
 }

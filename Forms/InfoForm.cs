@@ -1,5 +1,6 @@
 ﻿using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Service;
+using MiniPomidoroWin.Themes;
 
 namespace MiniPomidoroWin.Forms
 {
@@ -12,7 +13,9 @@ namespace MiniPomidoroWin.Forms
 		{
 			InitializeComponent();
 
-			LocalizationService.Instance.LanguageChanged += LocalizationService_LanguageChanged;
+			this.BackColor = Theme.FormBackground;
+
+			LocalizationService.Instance.LanguageChanged += this.LocalizationService_LanguageChanged;
 
 			this.ApplyLocalization();
 		}
@@ -22,7 +25,8 @@ namespace MiniPomidoroWin.Forms
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
-			LocalizationService.Instance.LanguageChanged -= LocalizationService_LanguageChanged;
+			LocalizationService.Instance.LanguageChanged -= this.LocalizationService_LanguageChanged;
+
 			base.OnFormClosed(e);
 		}
 
@@ -40,7 +44,11 @@ namespace MiniPomidoroWin.Forms
 		private void ApplyLocalization()
 		{
 			this.Text = AppStrings.InfoForm_Title;
-			label1.Text = AppStrings.InfoForm_ThanksLabel;
+
+			this.lblAppName.Text = AppStrings.MainForm_Title;
+			this.lblHowToUse.Text = AppStrings.InfoForm_HowToUse;
+			this.lblInstructions.Text = AppStrings.InfoForm_Instructions;
+			this.lblThanks.Text = AppStrings.InfoForm_ThanksLabel;
 		}
 	}
 }

@@ -29,8 +29,8 @@
 		private void InitializeComponent()
 		{
 			circularTimer = new MiniPomidoroWin.Controls.CircularTimer();
-			btnPause = new MiniPomidoroWin.Controls.ModernButton();
-			btnStop = new MiniPomidoroWin.Controls.ModernButton();
+			btnPause = new MiniPomidoroWin.Controls.IconButton();
+			btnStop = new MiniPomidoroWin.Controls.IconButton();
 			SuspendLayout();
 			// 
 			// circularTimer
@@ -47,27 +47,28 @@
 			btnPause.BackColor = Color.FromArgb(153, 102, 204);
 			btnPause.BorderRadius = 24;
 			btnPause.FlatStyle = FlatStyle.Flat;
-			btnPause.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
 			btnPause.ForeColor = Color.White;
-			btnPause.Location = new Point(216, 41);
+			btnPause.Glyph = MiniPomidoroWin.Controls.IconGlyph.Pause;
+			btnPause.IconScale = 0.34F;
+			btnPause.Location = new Point(216, 48);
 			btnPause.Name = "btnPause";
 			btnPause.Size = new Size(48, 48);
 			btnPause.TabIndex = 1;
-			btnPause.Text = "⏸";
 			btnPause.UseVisualStyleBackColor = false;
 			btnPause.Click += btnPause_Click;
 			// 
 			// btnStop
 			// 
 			btnStop.BackColor = Color.FromArgb(153, 102, 204);
+			btnStop.BorderRadius = 28;
 			btnStop.FlatStyle = FlatStyle.Flat;
-			btnStop.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
 			btnStop.ForeColor = Color.White;
-			btnStop.Location = new Point(210, 109);
+			btnStop.Glyph = MiniPomidoroWin.Controls.IconGlyph.Stop;
+			btnStop.IconScale = 0.30F;
+			btnStop.Location = new Point(212, 106);
 			btnStop.Name = "btnStop";
-			btnStop.Size = new Size(60, 60);
+			btnStop.Size = new Size(56, 56);
 			btnStop.TabIndex = 2;
-			btnStop.Text = "⏹";
 			btnStop.UseVisualStyleBackColor = false;
 			btnStop.Click += btnStop_Click;
 			// 
@@ -75,12 +76,13 @@
 			// 
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
-			BackColor = SystemColors.ControlDark;
+			BackColor = Color.FromArgb(34, 40, 49);
 			ClientSize = new Size(280, 210);
 			Controls.Add(btnStop);
 			Controls.Add(btnPause);
 			Controls.Add(circularTimer);
 			FormBorderStyle = FormBorderStyle.None;
+			KeyPreview = true;
 			Name = "MiniTimerForm";
 			ShowInTaskbar = false;
 			StartPosition = FormStartPosition.Manual;
@@ -92,7 +94,7 @@
 		#endregion
 
 		private Controls.CircularTimer circularTimer;
-		private Controls.ModernButton btnPause;
-		private Controls.ModernButton btnStop;
+		private Controls.IconButton btnPause;
+		private Controls.IconButton btnStop;
 	}
 }
