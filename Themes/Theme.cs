@@ -15,5 +15,15 @@
 
 		// Цвета для формы
 		public static readonly Color FormBackground = Color.FromArgb(34, 40, 49); // Темный фон форм
+
+		// Поля ввода времени
+		public static readonly Color FieldBackground = Color.FromArgb(44, 52, 64); // Фон поля
+		public static readonly Color FieldBorder = Color.FromArgb(58, 68, 82); // Рамка поля
+		public static readonly Color FieldCaption = Color.FromArgb(138, 147, 165); // Подписи и стрелки
+
+		// Второстепенные кнопки
+		public static readonly Color ButtonSecondary = FieldBackground; // Фон
+		public static readonly Color ButtonSecondaryHover = FieldBorder; // Наведение
+		public static readonly Color ButtonSecondaryPressed = Color.FromArgb(36, 44, 55); // Нажатие
 	}
 }
