@@ -3,39 +3,39 @@ using System.IO;
 
 namespace MiniPomidoroWin.Service
 {
-	internal class AudioService : IDisposable
+	/// <summary>
+	/// Сервис воспроизведения мелодии окончания таймера
+	/// </summary>
+	internal sealed class AudioService : IDisposable
 	{
 		/// <summary>
-		/// 
+		/// Синхронизация доступа к полям воспроизведения
 		/// </summary>
-		private IWavePlayer? _outputDevice;
+		private readonly object _sync = new object();
 
 		/// <summary>
-		/// Аудиофайл выбранный пользователем
+		/// Устройство вывода
 		/// </summary>
-		private AudioFileReader? _audioFile;
+		private IWavePlayer? _output;
 
 		/// <summary>
-		/// Для встроенной мелодии
+		/// Текущий аудиопоток
 		/// </summary>
-		private WaveOut? _embeddedOutput;
+		private WaveStream? _reader;
 
 		/// <summary>
-		/// Для встроенной мелодии
+		/// Признак освобождения сервиса
 		/// </summary>
-		private Mp3FileReader? _embeddedReader;
+		private bool _disposed;
 
 		/// <summary>
-		/// Воспроизведение пользовательского файла мелодии
+		/// Воспроизведение пользовательского файла
 		/// </summary>
 		public void PlayCustomFile(string filePath)
 		{
-			Stop(); 
+			ObjectDisposedException.ThrowIf(this._disposed, this);
 
-			_audioFile = new AudioFileReader(filePath);
-			_outputDevice = new WaveOut();
-			_outputDevice.Init(_audioFile);
-			_outputDevice.Play();
+			this.Play(new AudioFileReader(filePath));
 		}
 
 		/// <summary>
@@ -43,47 +43,109 @@ namespace MiniPomidoroWin.Service
 		/// </summary>
 		public void PlayEmbedded(UnmanagedMemoryStream mp3Stream)
 		{
-			Stop();
+			ObjectDisposedException.ThrowIf(this._disposed, this);
 
-			_embeddedReader = new Mp3FileReader(mp3Stream);
-			_embeddedOutput = new WaveOut();
-
-			_embeddedOutput.PlaybackStopped += (s, e) =>
-			{
-				_embeddedOutput?.Dispose();
-				_embeddedReader?.Dispose();
-				_embeddedOutput = null;
-				_embeddedReader = null;
-			};
-
-			_embeddedOutput.Init(_embeddedReader);
-			_embeddedOutput.Play();
+			this.Play(new Mp3FileReader(mp3Stream));
 		}
 
 		/// <summary>
-		/// Выключение воспроизведения
+		/// Остановка воспроизведения
 		/// </summary>
 		public void Stop()
 		{
-			if (_outputDevice != null)
+			IWavePlayer? output;
+			WaveStream? reader;
+
+			lock (this._sync)
 			{
-				_outputDevice.Stop();
-				_outputDevice.Dispose();
-				_outputDevice = null;
+				output = this._output;
+				reader = this._reader;
+
+				this._output = null;
+				this._reader = null;
 			}
 
-			if (_audioFile != null)
-			{
-				_audioFile.Dispose();
-				_audioFile = null;
-			}
-
-			_embeddedOutput?.Stop();
+			DisposePlayback(output, reader);
 		}
 
 		/// <summary>
 		/// Освобождение ресурсов
 		/// </summary>
-		public void Dispose() => Stop();
+		public void Dispose()
+		{
+			if (this._disposed)
+			{
+				return;
+			}
+
+			this._disposed = true;
+			this.Stop();
+		}
+
+		/// <summary>
+		/// Запуск нового потока с остановкой предыдущего
+		/// </summary>
+		private void Play(WaveStream reader)
+		{
+			IWavePlayer output = new WaveOut();
+
+			try
+			{
+				output.Init(reader);
+			}
+			catch
+			{
+				output.Dispose();
+				reader.Dispose();
+				throw;
+			}
+
+			IWavePlayer? previousOutput;
+			WaveStream? previousReader;
+
+			lock (this._sync)
+			{
+				if (this._disposed)
+				{
+					output.Dispose();
+					reader.Dispose();
+					return;
+				}
+
+				previousOutput = this._output;
+				previousReader = this._reader;
+
+				this._output = output;
+				this._reader = reader;
+			}
+
+			// Предыдущий звук останавливаем только после подмены полей,
+			// чтобы его остановка не могла затронуть новый поток
+			DisposePlayback(previousOutput, previousReader);
+
+			try
+			{
+				output.Play();
+			}
+			catch
+			{
+				this.Stop();
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Остановка и освобождение конкретного воспроизведения
+		/// </summary>
+		private static void DisposePlayback(IWavePlayer? output, WaveStream? reader)
+		{
+			if (output != null)
+			{
+				output.Stop();
+				output.Dispose();
+			}
+
+			reader?.Dispose();
+		}
 	}
 }

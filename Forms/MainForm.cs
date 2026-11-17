@@ -2,11 +2,10 @@ using MiniPomidoroWin.Forms;
 using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Service;
 using MiniPomidoroWin.Themes;
-using System.IO;
 
 namespace MiniPomidoroWin
 {
-	public partial class MainForm : Form
+	public partial class MainForm : LocalizedForm
 	{
 		/// <summary>
 		/// Сервис звука
@@ -30,36 +29,24 @@ namespace MiniPomidoroWin
 			this.minutesField.ValueChanged += this.TimeField_ValueChanged;
 			this.secondsField.ValueChanged += this.TimeField_ValueChanged;
 
-			LocalizationService.Instance.LanguageChanged += this.LocalizationService_LanguageChanged;
-
 			this.ApplyLocalization();
 			this.UpdateStartButtonState();
 		}
 
 		/// <summary>
-		/// Отписка от событий и освобождение ресурсов
+		/// Освобождение сервиса звука
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
-			LocalizationService.Instance.LanguageChanged -= this.LocalizationService_LanguageChanged;
-
-			_audioService.Dispose();
+			this._audioService.Dispose();
 
 			base.OnFormClosed(e);
 		}
 
 		/// <summary>
-		/// Смена языка интерфейса
-		/// </summary>
-		private void LocalizationService_LanguageChanged(object? sender, EventArgs e)
-		{
-			this.ApplyLocalization();
-		}
-
-		/// <summary>
 		/// Применение локализованных строк к элементам формы
 		/// </summary>
-		private void ApplyLocalization()
+		protected override void ApplyLocalization()
 		{
 			this.Text = AppStrings.MainForm_Title;
 			this.notifyIcon1.Text = AppStrings.MainForm_Title;
@@ -105,11 +92,17 @@ namespace MiniPomidoroWin
 
 			if (seconds <= 0)
 			{
-				MessageBox.Show(AppStrings.MainForm_TimeZeroWarning, AppStrings.Common_WarningTitle);
+				MessageBox.Show(
+					this,
+					AppStrings.MainForm_TimeZeroWarning,
+					AppStrings.Common_WarningTitle,
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+
 				return;
 			}
 
-			_audioService.Stop();
+			this._audioService.Stop();
 
 			this.ShowMiniTimer(TimeSpan.FromSeconds(seconds));
 		}
@@ -119,22 +112,22 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void ShowMiniTimer(TimeSpan duration)
 		{
-			if (_miniTimerForm != null && !_miniTimerForm.IsDisposed)
+			if (this._miniTimerForm != null && !this._miniTimerForm.IsDisposed)
 			{
-				_miniTimerForm.Activate();
+				this._miniTimerForm.Activate();
 				return;
 			}
 
 			Screen screen = Screen.FromControl(this);
 
-			_miniTimerForm = new MiniTimerForm(screen);
-			_miniTimerForm.TimerFinished += this.MiniTimerForm_TimerFinished;
-			_miniTimerForm.FormClosed += this.MiniTimerForm_FormClosed;
+			this._miniTimerForm = new MiniTimerForm(screen);
+			this._miniTimerForm.TimerFinished += this.MiniTimerForm_TimerFinished;
+			this._miniTimerForm.FormClosed += this.MiniTimerForm_FormClosed;
 
 			this.Hide();
 
-			_miniTimerForm.Show();
-			_miniTimerForm.StartTimer(duration);
+			this._miniTimerForm.Show();
+			this._miniTimerForm.StartTimer(duration);
 		}
 
 		/// <summary>
@@ -150,11 +143,11 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void MiniTimerForm_FormClosed(object? sender, FormClosedEventArgs e)
 		{
-			if (_miniTimerForm != null)
+			if (this._miniTimerForm != null)
 			{
-				_miniTimerForm.TimerFinished -= this.MiniTimerForm_TimerFinished;
-				_miniTimerForm.FormClosed -= this.MiniTimerForm_FormClosed;
-				_miniTimerForm = null;
+				this._miniTimerForm.TimerFinished -= this.MiniTimerForm_TimerFinished;
+				this._miniTimerForm.FormClosed -= this.MiniTimerForm_FormClosed;
+				this._miniTimerForm = null;
 			}
 
 			if (this.IsDisposed || this.Disposing)
@@ -172,25 +165,26 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void PlayEndSound()
 		{
-			if (!string.IsNullOrEmpty(SettingsService.CustomSoundPath) && File.Exists(SettingsService.CustomSoundPath))
+			// Файл мог исчезнуть с диска — тогда звучит встроенная мелодия
+			if (SettingsService.HasCustomSound && SettingsService.CustomSoundPath is string path)
 			{
 				try
 				{
-					_audioService.PlayCustomFile(SettingsService.CustomSoundPath);
+					this._audioService.PlayCustomFile(path);
+					return;
 				}
 				catch (Exception ex)
 				{
 					MessageBox.Show(
+						this,
 						string.Format(AppStrings.MainForm_AudioPlaybackError, ex.Message),
-						AppStrings.Common_ErrorTitle);
-
-					_audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
+						AppStrings.Common_ErrorTitle,
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
 				}
 			}
-			else
-			{
-				_audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
-			}
+
+			this._audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
 		}
 
 		/// <summary>
@@ -200,7 +194,7 @@ namespace MiniPomidoroWin
 		{
 			using (SettingsForm settings = new SettingsForm())
 			{
-				settings.ShowDialog();
+				settings.ShowDialog(this);
 			}
 		}
 
@@ -211,7 +205,7 @@ namespace MiniPomidoroWin
 		{
 			using (InfoForm info = new InfoForm())
 			{
-				info.ShowDialog();
+				info.ShowDialog(this);
 			}
 		}
 	}

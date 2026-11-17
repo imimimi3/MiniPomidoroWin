@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -18,9 +18,14 @@ namespace MiniPomidoroWin.Controls
 		private const float TextScale = 0.22f;
 
 		/// <summary>
-		/// Основной таймер
+		/// Основной таймер перерисовки
 		/// </summary>
 		private readonly System.Windows.Forms.Timer timer;
+
+		/// <summary>
+		/// Точный отсчёт прошедшего времени
+		/// </summary>
+		private readonly Stopwatch stopwatch = new Stopwatch();
 
 		/// <summary>
 		/// Форматирование текста по центру без переноса
@@ -49,18 +54,18 @@ namespace MiniPomidoroWin.Controls
 		[Category("Appearance")]
 		public int Thickness
 		{
-			get => thickness;
+			get => this.thickness;
 			set
 			{
 				int newValue = Math.Max(1, value);
 
-				if (thickness == newValue)
+				if (this.thickness == newValue)
 				{
 					return;
 				}
 
-				thickness = newValue;
-				Invalidate();
+				this.thickness = newValue;
+				this.Invalidate();
 			}
 		}
 
@@ -72,46 +77,46 @@ namespace MiniPomidoroWin.Controls
 		/// <summary>
 		/// Оставшееся время
 		/// </summary>
-		public TimeSpan TimeLeft => timeLeft;
+		public TimeSpan TimeLeft => this.timeLeft;
 
 		/// <summary>
 		/// Общее время
 		/// </summary>
-		public TimeSpan TotalTime => totalTime;
+		public TimeSpan TotalTime => this.totalTime;
 
 		/// <summary>
 		/// Запущен ли
 		/// </summary>
-		public bool IsRunning => timer.Enabled && timeLeft.TotalMilliseconds > 0;
+		public bool IsRunning => this.timer.Enabled && this.timeLeft > TimeSpan.Zero;
 
 		/// <summary>
 		/// На паузе ли
 		/// </summary>
-		public bool IsPaused => !timer.Enabled && timeLeft.TotalMilliseconds > 0;
+		public bool IsPaused => !this.timer.Enabled && this.timeLeft > TimeSpan.Zero;
 
 		/// <summary>
 		/// Конструктор
 		/// </summary>
 		public CircularTimer()
 		{
-			SetStyle(
+			this.SetStyle(
 				ControlStyles.AllPaintingInWmPaint |
 				ControlStyles.OptimizedDoubleBuffer |
 				ControlStyles.UserPaint |
 				ControlStyles.ResizeRedraw,
 				true);
 
-			textFormat = new StringFormat
+			this.textFormat = new StringFormat
 			{
 				Alignment = StringAlignment.Center,
 				LineAlignment = StringAlignment.Center,
 				FormatFlags = StringFormatFlags.NoWrap
 			};
 
-			timer = new System.Windows.Forms.Timer { Interval = 100 };
-			timer.Tick += Timer_Tick;
+			this.timer = new System.Windows.Forms.Timer { Interval = 100 };
+			this.timer.Tick += this.Timer_Tick;
 
-			Size = new Size(200, 200);
+			this.Size = new Size(200, 200);
 		}
 
 		/// <summary>
@@ -119,10 +124,19 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public void Start(TimeSpan duration)
 		{
-			totalTime = duration;
-			timeLeft = duration;
-			timer.Start();
-			Invalidate();
+			this.timer.Stop();
+			this.stopwatch.Reset();
+
+			this.totalTime = duration > TimeSpan.Zero ? duration : TimeSpan.Zero;
+			this.timeLeft = this.totalTime;
+
+			if (this.totalTime > TimeSpan.Zero)
+			{
+				this.stopwatch.Start();
+				this.timer.Start();
+			}
+
+			this.Invalidate();
 		}
 
 		/// <summary>
@@ -130,7 +144,15 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public void Pause()
 		{
-			timer.Stop();
+			if (!this.timer.Enabled)
+			{
+				return;
+			}
+
+			this.timeLeft = this.GetTimeLeft();
+			this.timer.Stop();
+			this.stopwatch.Stop();
+			this.Invalidate();
 		}
 
 		/// <summary>
@@ -138,10 +160,13 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public void Resume()
 		{
-			if (timeLeft.TotalMilliseconds > 0)
+			if (this.timer.Enabled || this.timeLeft <= TimeSpan.Zero)
 			{
-				timer.Start();
+				return;
 			}
+
+			this.stopwatch.Start();
+			this.timer.Start();
 		}
 
 		/// <summary>
@@ -149,29 +174,13 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public void Stop()
 		{
-			timer.Stop();
-			timeLeft = TimeSpan.Zero;
-			totalTime = TimeSpan.Zero;
-			Invalidate();
-		}
+			this.timer.Stop();
+			this.stopwatch.Reset();
 
-		/// <summary>
-		/// Тик таймера
-		/// </summary>
-		private void Timer_Tick(object? sender, EventArgs e)
-		{
-			timeLeft = timeLeft.Subtract(TimeSpan.FromMilliseconds(timer.Interval));
+			this.timeLeft = TimeSpan.Zero;
+			this.totalTime = TimeSpan.Zero;
 
-			if (timeLeft.TotalMilliseconds <= 0)
-			{
-				timeLeft = TimeSpan.Zero;
-				timer.Stop();
-				Invalidate();
-				TimeFinished?.Invoke(this, EventArgs.Empty);
-				return;
-			}
-
-			Invalidate();
+			this.Invalidate();
 		}
 
 		/// <summary>
@@ -181,12 +190,43 @@ namespace MiniPomidoroWin.Controls
 		{
 			if (disposing)
 			{
-				timer.Stop();
-				timer.Dispose();
-				textFormat.Dispose();
+				this.timer.Stop();
+				this.timer.Dispose();
+				this.textFormat.Dispose();
 			}
 
 			base.Dispose(disposing);
+		}
+
+		/// <summary>
+		/// Тик таймера
+		/// </summary>
+		private void Timer_Tick(object? sender, EventArgs e)
+		{
+			this.timeLeft = this.GetTimeLeft();
+
+			if (this.timeLeft > TimeSpan.Zero)
+			{
+				this.Invalidate();
+				return;
+			}
+
+			this.timeLeft = TimeSpan.Zero;
+			this.timer.Stop();
+			this.stopwatch.Reset();
+			this.Invalidate();
+
+			this.TimeFinished?.Invoke(this, EventArgs.Empty);
+		}
+
+		/// <summary>
+		/// Оставшееся время по точным часам
+		/// </summary>
+		private TimeSpan GetTimeLeft()
+		{
+			TimeSpan left = this.totalTime - this.stopwatch.Elapsed;
+
+			return left > TimeSpan.Zero ? left : TimeSpan.Zero;
 		}
 
 		/// <summary>
@@ -197,9 +237,9 @@ namespace MiniPomidoroWin.Controls
 			base.OnPaint(e);
 
 			Graphics g = e.Graphics;
-			int diameter = Math.Min(Width, Height);
+			int diameter = Math.Min(this.Width, this.Height);
 
-			if (diameter <= thickness * 2 + 8)
+			if (diameter <= this.thickness * 2 + 8)
 			{
 				return;
 			}
@@ -208,25 +248,25 @@ namespace MiniPomidoroWin.Controls
 			g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
 			Rectangle rect = new Rectangle(
-				(Width - diameter) / 2 + thickness / 2,
-				(Height - diameter) / 2 + thickness / 2,
-				diameter - thickness,
-				diameter - thickness);
+				(this.Width - diameter) / 2 + this.thickness / 2,
+				(this.Height - diameter) / 2 + this.thickness / 2,
+				diameter - this.thickness,
+				diameter - this.thickness);
 
 			// Фоновая дорожка
-			using (Pen trackPen = new Pen(Theme.TimerTrack, thickness))
+			using (Pen trackPen = new Pen(Theme.TimerTrack, this.thickness))
 			{
 				g.DrawEllipse(trackPen, rect);
 			}
 
 			// Прогресс
-			if (totalTime > TimeSpan.Zero)
+			if (this.totalTime > TimeSpan.Zero)
 			{
-				float progress = (float)(timeLeft.TotalMilliseconds / totalTime.TotalMilliseconds);
+				float progress = (float)(this.timeLeft.TotalMilliseconds / this.totalTime.TotalMilliseconds);
 
 				if (progress > 0.001f)
 				{
-					using (Pen progressPen = new Pen(Theme.TimerProgress, thickness))
+					using (Pen progressPen = new Pen(Theme.TimerProgress, this.thickness))
 					{
 						progressPen.StartCap = LineCap.Round;
 						progressPen.EndCap = LineCap.Round;
@@ -237,7 +277,7 @@ namespace MiniPomidoroWin.Controls
 			}
 
 			// Текст
-			string timeText = this.FormatTime(timeLeft);
+			string timeText = this.FormatTime(this.timeLeft);
 
 			using (Font font = this.CreateTimeFont(g, timeText, diameter))
 			using (Brush textBrush = new SolidBrush(Theme.TextColor))
@@ -246,8 +286,8 @@ namespace MiniPomidoroWin.Controls
 					timeText,
 					font,
 					textBrush,
-					new RectangleF(0f, 0f, Width, Height),
-					textFormat);
+					new RectangleF(0f, 0f, this.Width, this.Height),
+					this.textFormat);
 			}
 		}
 
@@ -271,8 +311,8 @@ namespace MiniPomidoroWin.Controls
 
 			Font font = new Font("Segoe UI", size, FontStyle.Bold, GraphicsUnit.Pixel);
 
-			float maxWidth = diameter - thickness * 2 - diameter * 0.08f;
-			float maxHeight = diameter - thickness * 2 - diameter * 0.12f;
+			float maxWidth = diameter - this.thickness * 2 - diameter * 0.08f;
+			float maxHeight = diameter - this.thickness * 2 - diameter * 0.12f;
 
 			SizeF measured = g.MeasureString(text, font);
 			float factor = 1f;

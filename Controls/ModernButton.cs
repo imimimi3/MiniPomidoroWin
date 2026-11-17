@@ -12,22 +12,40 @@ namespace MiniPomidoroWin.Controls
 		/// <summary>
 		/// Толщина рамки
 		/// </summary>
-		private int _borderSize = 0;
+		private int _borderSize;
 
 		/// <summary>
 		/// Радиус скругления
 		/// </summary>
 		private int _borderRadius = 30;
+
+		/// <summary>
+		/// Цвет рамки
+		/// </summary>
 		private Color _borderColor = Color.White;
-		
+
+		/// <summary>
+		/// Родитель, к изменению цвета которого подписана кнопка
+		/// </summary>
+		private Control? _colorSource;
+
 		/// <summary>
 		/// Толщина рамки
 		/// </summary>
 		[DefaultValue(0)]
 		public int BorderSize
 		{
-			get => _borderSize;
-			set { _borderSize = value; UpdateRegion(); Invalidate(); }
+			get => this._borderSize;
+			set
+			{
+				if (this._borderSize == value)
+				{
+					return;
+				}
+
+				this._borderSize = value;
+				this.Invalidate();
+			}
 		}
 
 		/// <summary>
@@ -36,8 +54,18 @@ namespace MiniPomidoroWin.Controls
 		[DefaultValue(30)]
 		public int BorderRadius
 		{
-			get => _borderRadius;
-			set { _borderRadius = value; UpdateRegion(); Invalidate(); }
+			get => this._borderRadius;
+			set
+			{
+				if (this._borderRadius == value)
+				{
+					return;
+				}
+
+				this._borderRadius = value;
+				this.UpdateRegion();
+				this.Invalidate();
+			}
 		}
 
 		/// <summary>
@@ -46,8 +74,17 @@ namespace MiniPomidoroWin.Controls
 		[DefaultValue(typeof(Color), "White")]
 		public Color BorderColor
 		{
-			get => _borderColor;
-			set { _borderColor = value; Invalidate(); }
+			get => this._borderColor;
+			set
+			{
+				if (this._borderColor == value)
+				{
+					return;
+				}
+
+				this._borderColor = value;
+				this.Invalidate();
+			}
 		}
 
 		/// <summary>
@@ -64,114 +101,182 @@ namespace MiniPomidoroWin.Controls
 
 			// Настройка цветов
 			this.BackColor = Theme.ButtonPrimary;
-			this.ForeColor = Color.White;
+			this.ForeColor = Theme.TextColor;
 
-			// Цвета при нажатии на кнопку
+			// Цвета при наведении и нажатии
 			this.FlatAppearance.MouseOverBackColor = Theme.ButtonHover;
 			this.FlatAppearance.MouseDownBackColor = Theme.ButtonPressed;
 		}
 
 		/// <summary>
-		/// Обновление при изменении размера
-		/// </summary> 
+		/// Обновление скругления при изменении размера
+		/// </summary>
 		protected override void OnResize(EventArgs e)
 		{
 			base.OnResize(e);
-			UpdateRegion();
+
+			this.UpdateRegion();
 		}
 
 		/// <summary>
-		///
-		/// </summary> 
+		/// Подписка на изменение цвета родителя
+		/// </summary>
 		protected override void OnHandleCreated(EventArgs e)
 		{
 			base.OnHandleCreated(e);
-			if (this.Parent != null)
-			{
-				this.Parent.BackColorChanged += (s, ev) => this.Invalidate();
-			}
+
+			this.BindParentColors();
 		}
 
 		/// <summary>
-		/// Перерисовка
-		/// </summary> 
-		private void UpdateRegion()
+		/// Переподписка при смене родителя
+		/// </summary>
+		protected override void OnParentChanged(EventArgs e)
 		{
-			if (_borderRadius > 2 && this.Width > 0 && this.Height > 0)
+			base.OnParentChanged(e);
+
+			this.BindParentColors();
+		}
+
+		/// <summary>
+		/// Отписка от событий и освобождение ресурсов
+		/// </summary>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
 			{
-				int safeRadius = Math.Min(_borderRadius, Math.Min(this.Width, this.Height));
-				using (GraphicsPath path = GetFigurePath(this.ClientRectangle, safeRadius))
-				{
-					this.Region = new Region(path);
-				}
+				this.UnbindParentColors();
 			}
-			else
-			{
-				this.Region = new Region(this.ClientRectangle);
-			}
+
+			base.Dispose(disposing);
 		}
 
 		/// <summary>
 		/// Переопределение базового класса рисования
-		/// </summary> 
+		/// </summary>
 		protected override void OnPaint(PaintEventArgs pevent)
 		{
 			base.OnPaint(pevent);
 
-			Rectangle rectSurface = this.ClientRectangle;
-			Rectangle rectBorder = Rectangle.Inflate(rectSurface, -_borderSize, -_borderSize);
-			int smoothSize = 2;
-			if (_borderSize > 0) smoothSize = _borderSize;
+			Graphics graphics = pevent.Graphics;
+			Rectangle surface = this.ClientRectangle;
+			int borderSize = this._borderSize;
+			int smoothSize = borderSize > 0 ? borderSize : 2;
 
-			if (_borderRadius > 2)
+			if (this._borderRadius <= 2)
 			{
-				int safeRadius = Math.Min(_borderRadius, Math.Min(this.Width, this.Height));
-
-				using (GraphicsPath pathSurface = GetFigurePath(rectSurface, safeRadius))
-				using (GraphicsPath pathBorder = GetFigurePath(rectBorder, safeRadius - _borderSize))
-				
-				using (Pen penSurface = new Pen(this.Parent?.BackColor ?? this.BackColor, smoothSize))
-				using (Pen penBorder = new Pen(_borderColor, _borderSize))
+				if (borderSize >= 1)
 				{
-					pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+					graphics.SmoothingMode = SmoothingMode.None;
 
-					pevent.Graphics.DrawPath(penSurface, pathSurface);
-
-					if (_borderSize >= 1)
-					{
-						pevent.Graphics.DrawPath(penBorder, pathBorder);
-					}
-				}
-			}
-			else
-			{
-				pevent.Graphics.SmoothingMode = SmoothingMode.None;
-				if (_borderSize >= 1)
-				{
-					using (Pen penBorder = new Pen(_borderColor, _borderSize))
+					using (Pen penBorder = new Pen(this._borderColor, borderSize))
 					{
 						penBorder.Alignment = PenAlignment.Inset;
-						pevent.Graphics.DrawRectangle(penBorder, 0, 0, this.Width - 1, this.Height - 1);
+						graphics.DrawRectangle(penBorder, 0, 0, surface.Width - 1, surface.Height - 1);
 					}
 				}
+
+				return;
+			}
+
+			float radius = this.GetRadius();
+			Rectangle border = Rectangle.Inflate(surface, -borderSize, -borderSize);
+
+			graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+			// Кайма цветом фона родителя сглаживает скругление по краям
+			using (GraphicsPath pathSurface = RoundedRectangle.Create(surface, radius))
+			using (Pen penSurface = new Pen(this.Parent?.BackColor ?? this.BackColor, smoothSize))
+			{
+				graphics.DrawPath(penSurface, pathSurface);
+			}
+
+			if (borderSize < 1)
+			{
+				return;
+			}
+
+			using (GraphicsPath pathBorder = RoundedRectangle.Create(border, Math.Max(0f, radius - borderSize)))
+			using (Pen penBorder = new Pen(this._borderColor, borderSize))
+			{
+				graphics.DrawPath(penBorder, pathBorder);
 			}
 		}
 
 		/// <summary>
-		/// Вспомогательный метод для создания закругленного прямоугольника
-		/// </summary>  
-		private GraphicsPath GetFigurePath(Rectangle rect, int radius)
+		/// Радиус скругления с учётом размеров кнопки
+		/// </summary>
+		private float GetRadius()
 		{
-			GraphicsPath path = new GraphicsPath();
-			float curveSize = radius * 2F;
+			return Math.Min(this._borderRadius, Math.Min(this.Width, this.Height) / 2f);
+		}
 
-			path.StartFigure();
-			path.AddArc(rect.X, rect.Y, curveSize, curveSize, 180, 90);
-			path.AddArc(rect.Right - curveSize, rect.Y, curveSize, curveSize, 270, 90);
-			path.AddArc(rect.Right - curveSize, rect.Bottom - curveSize, curveSize, curveSize, 0, 90);
-			path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
-			path.CloseFigure();
-			return path;
+		/// <summary>
+		/// Обновление скруглённой области кнопки
+		/// </summary>
+		private void UpdateRegion()
+		{
+			Region? previous = this.Region;
+			Region next;
+
+			if (this._borderRadius > 2 && this.Width > 0 && this.Height > 0)
+			{
+				using (GraphicsPath path = RoundedRectangle.Create(this.ClientRectangle, this.GetRadius()))
+				{
+					next = new Region(path);
+				}
+			}
+			else
+			{
+				next = new Region(this.ClientRectangle);
+			}
+
+			this.Region = next;
+
+			// Без этого каждый ресайз оставлял бы регион в GDI неосвобождённым
+			previous?.Dispose();
+		}
+
+		/// <summary>
+		/// Подписка на изменение цвета родителя
+		/// </summary>
+		private void BindParentColors()
+		{
+			Control? parent = this.Parent;
+
+			if (ReferenceEquals(this._colorSource, parent))
+			{
+				return;
+			}
+
+			this.UnbindParentColors();
+
+			this._colorSource = parent;
+
+			if (this._colorSource != null)
+			{
+				this._colorSource.BackColorChanged += this.Parent_BackColorChanged;
+			}
+		}
+
+		/// <summary>
+		/// Отписка от изменения цвета родителя
+		/// </summary>
+		private void UnbindParentColors()
+		{
+			if (this._colorSource != null)
+			{
+				this._colorSource.BackColorChanged -= this.Parent_BackColorChanged;
+				this._colorSource = null;
+			}
+		}
+
+		/// <summary>
+		/// Перерисовка при изменении цвета родителя
+		/// </summary>
+		private void Parent_BackColorChanged(object? sender, EventArgs e)
+		{
+			this.Invalidate();
 		}
 	}
 }
