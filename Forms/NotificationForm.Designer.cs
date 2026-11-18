@@ -38,7 +38,7 @@
 			lblMessage.ForeColor = Color.White;
 			lblMessage.Location = new Point(30, 30);
 			lblMessage.Name = "lblMessage";
-			lblMessage.Size = new Size(460, 76);
+			lblMessage.Size = new Size(672, 76);
 			lblMessage.TabIndex = 0;
 			lblMessage.Text = "Пора переключиться!";
 			lblMessage.TextAlign = ContentAlignment.MiddleCenter;
@@ -50,7 +50,7 @@
 			btnOk.FlatStyle = FlatStyle.Flat;
 			btnOk.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
 			btnOk.ForeColor = Color.White;
-			btnOk.Location = new Point(180, 130);
+			btnOk.Location = new Point(274, 132);
 			btnOk.Name = "btnOk";
 			btnOk.Size = new Size(160, 56);
 			btnOk.TabIndex = 1;
@@ -63,7 +63,7 @@
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
 			BackColor = Color.FromArgb(34, 40, 49);
-			ClientSize = new Size(520, 216);
+			ClientSize = new Size(722, 216);
 			Controls.Add(btnOk);
 			Controls.Add(lblMessage);
 			FormBorderStyle = FormBorderStyle.FixedSingle;

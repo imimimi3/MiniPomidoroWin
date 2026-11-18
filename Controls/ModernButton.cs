@@ -30,6 +30,16 @@ namespace MiniPomidoroWin.Controls
 		private Control? _colorSource;
 
 		/// <summary>
+		/// Курсор находится над кнопкой
+		/// </summary>
+		private bool _hovered;
+
+		/// <summary>
+		/// Кнопка нажата
+		/// </summary>
+		private bool _pressed;
+
+		/// <summary>
 		/// Толщина рамки
 		/// </summary>
 		[DefaultValue(0)]
@@ -92,6 +102,17 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		public ModernButton()
 		{
+			// Кнопка рисуется целиком вручную: так текст и значок
+			// всегда оказываются ровно по центру клиентской области
+			this.SetStyle(
+				ControlStyles.UserPaint |
+				ControlStyles.AllPaintingInWmPaint |
+				ControlStyles.OptimizedDoubleBuffer |
+				ControlStyles.ResizeRedraw,
+				true);
+
+			this.UpdateStyles();
+
 			// Базовые настройки кнопки
 			this.FlatStyle = FlatStyle.Flat;
 			this.FlatAppearance.BorderSize = 0;
@@ -139,6 +160,67 @@ namespace MiniPomidoroWin.Controls
 		}
 
 		/// <summary>
+		/// Курсор вошёл на кнопку
+		/// </summary>
+		protected override void OnMouseEnter(EventArgs e)
+		{
+			base.OnMouseEnter(e);
+
+			this._hovered = true;
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Курсор покинул кнопку
+		/// </summary>
+		protected override void OnMouseLeave(EventArgs e)
+		{
+			base.OnMouseLeave(e);
+
+			this._hovered = false;
+			this._pressed = false;
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Нажатие кнопки мышью
+		/// </summary>
+		protected override void OnMouseDown(MouseEventArgs e)
+		{
+			base.OnMouseDown(e);
+
+			if (e.Button == MouseButtons.Left)
+			{
+				this._pressed = true;
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Отпускание кнопки мыши
+		/// </summary>
+		protected override void OnMouseUp(MouseEventArgs e)
+		{
+			base.OnMouseUp(e);
+
+			if (this._pressed)
+			{
+				this._pressed = false;
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Изменение доступности кнопки
+		/// </summary>
+		protected override void OnEnabledChanged(EventArgs e)
+		{
+			base.OnEnabledChanged(e);
+
+			this.Invalidate();
+		}
+
+		/// <summary>
 		/// Отписка от событий и освобождение ресурсов
 		/// </summary>
 		protected override void Dispose(bool disposing)
@@ -152,55 +234,152 @@ namespace MiniPomidoroWin.Controls
 		}
 
 		/// <summary>
-		/// Переопределение базового класса рисования
+		/// Отрисовка фона, рамки и текста
 		/// </summary>
 		protected override void OnPaint(PaintEventArgs pevent)
 		{
-			base.OnPaint(pevent);
-
 			Graphics graphics = pevent.Graphics;
 			Rectangle surface = this.ClientRectangle;
-			int borderSize = this._borderSize;
-			int smoothSize = borderSize > 0 ? borderSize : 2;
+
+			if (surface.Width <= 0 || surface.Height <= 0)
+			{
+				return;
+			}
+
+			// Фон родителя нужен для сглаживания скруглённых краёв
+			using (Brush parentBrush = new SolidBrush(this.Parent?.BackColor ?? this.BackColor))
+			{
+				graphics.FillRectangle(parentBrush, surface);
+			}
+
+			this.PaintSurface(graphics, surface);
+			this.PaintBorder(graphics, surface);
+			this.PaintText(graphics, surface);
+		}
+
+		/// <summary>
+		/// Заливка кнопки с учётом состояния
+		/// </summary>
+		private void PaintSurface(Graphics graphics, Rectangle surface)
+		{
+			using (Brush brush = new SolidBrush(this.GetFillColor()))
+			{
+				if (this._borderRadius <= 2)
+				{
+					graphics.FillRectangle(brush, surface);
+
+					return;
+				}
+
+				graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+				using (GraphicsPath path = RoundedRectangle.Create(surface, this.GetRadius()))
+				{
+					graphics.FillPath(brush, path);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Рамка кнопки
+		/// </summary>
+		private void PaintBorder(Graphics graphics, Rectangle surface)
+		{
+			if (this._borderSize < 1)
+			{
+				return;
+			}
 
 			if (this._borderRadius <= 2)
 			{
-				if (borderSize >= 1)
-				{
-					graphics.SmoothingMode = SmoothingMode.None;
+				graphics.SmoothingMode = SmoothingMode.None;
 
-					using (Pen penBorder = new Pen(this._borderColor, borderSize))
-					{
-						penBorder.Alignment = PenAlignment.Inset;
-						graphics.DrawRectangle(penBorder, 0, 0, surface.Width - 1, surface.Height - 1);
-					}
+				using (Pen penBorder = new Pen(this._borderColor, this._borderSize))
+				{
+					penBorder.Alignment = PenAlignment.Inset;
+					graphics.DrawRectangle(penBorder, 0, 0, surface.Width - 1, surface.Height - 1);
 				}
 
 				return;
 			}
 
 			float radius = this.GetRadius();
-			Rectangle border = Rectangle.Inflate(surface, -borderSize, -borderSize);
+			Rectangle border = Rectangle.Inflate(surface, -this._borderSize, -this._borderSize);
 
 			graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-			// Кайма цветом фона родителя сглаживает скругление по краям
-			using (GraphicsPath pathSurface = RoundedRectangle.Create(surface, radius))
-			using (Pen penSurface = new Pen(this.Parent?.BackColor ?? this.BackColor, smoothSize))
+			using (GraphicsPath pathBorder = RoundedRectangle.Create(border, Math.Max(0f, radius - this._borderSize)))
+			using (Pen penBorder = new Pen(this._borderColor, this._borderSize))
 			{
-				graphics.DrawPath(penSurface, pathSurface);
+				graphics.DrawPath(penBorder, pathBorder);
 			}
+		}
 
-			if (borderSize < 1)
+		/// <summary>
+		/// Текст по центру клиентской области
+		/// </summary>
+		private void PaintText(Graphics graphics, Rectangle surface)
+		{
+			if (string.IsNullOrEmpty(this.Text))
 			{
 				return;
 			}
 
-			using (GraphicsPath pathBorder = RoundedRectangle.Create(border, Math.Max(0f, radius - borderSize)))
-			using (Pen penBorder = new Pen(this._borderColor, borderSize))
+			TextFormatFlags flags =
+				TextFormatFlags.HorizontalCenter |
+				TextFormatFlags.VerticalCenter |
+				TextFormatFlags.SingleLine |
+				TextFormatFlags.NoPadding;
+
+			if (!this.UseMnemonic)
 			{
-				graphics.DrawPath(penBorder, pathBorder);
+				flags |= TextFormatFlags.NoPrefix;
 			}
+
+			Color color = this.Enabled ? this.ForeColor : Theme.FieldCaption;
+
+			TextRenderer.DrawText(graphics, this.Text, this.Font, surface, color, flags);
+		}
+
+		/// <summary>
+		/// Цвет заливки с учётом наведения и нажатия
+		/// </summary>
+		private Color GetFillColor()
+		{
+			if (!this.Enabled)
+			{
+				return this.BackColor;
+			}
+
+			if (this._pressed)
+			{
+				Color pressed = this.FlatAppearance.MouseDownBackColor;
+
+				return pressed.IsEmpty ? Blend(this.BackColor, Color.Black, 0.15f) : pressed;
+			}
+
+			if (this._hovered)
+			{
+				Color hover = this.FlatAppearance.MouseOverBackColor;
+
+				return hover.IsEmpty ? Blend(this.BackColor, Color.White, 0.12f) : hover;
+			}
+
+			return this.BackColor;
+		}
+
+		/// <summary>
+		/// Смешивание двух цветов
+		/// </summary>
+		private static Color Blend(Color source, Color target, float amount)
+		{
+			float rest = 1f - amount;
+
+			return Color.FromArgb(
+				source.A,
+				(int)((source.R * rest) + (target.R * amount)),
+				(int)((source.G * rest) + (target.G * amount)),
+				(int)((source.B * rest) + (target.B * amount)));
 		}
 
 		/// <summary>

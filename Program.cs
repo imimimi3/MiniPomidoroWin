@@ -11,6 +11,10 @@ namespace MiniPomidoroWin
 		[STAThread]
 		static void Main()
 		{
+			// В single-file сборке конфигурация извлекается из ресурсов
+			// до первого обращения к настройкам приложения
+			AppConfigBootstrap.Initialize();
+
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize();
