@@ -23,7 +23,12 @@ namespace MiniPomidoroWin.Controls
 		/// <summary>
 		/// Стоп
 		/// </summary>
-		Stop
+		Stop,
+
+		/// <summary>
+		/// Свернуть
+		/// </summary>
+		Minimize
 	}
 
 	/// <summary>
@@ -126,6 +131,10 @@ namespace MiniPomidoroWin.Controls
 					case IconGlyph.Stop:
 						DrawStop(g, brush, area);
 						break;
+
+					case IconGlyph.Minimize:
+						DrawMinimize(g, brush, area);
+						break;
 				}
 			}
 		}
@@ -180,6 +189,23 @@ namespace MiniPomidoroWin.Controls
 
 			using (GraphicsPath path = RoundedRectangle.Create(
 				new RectangleF(area.Left + offset, area.Top + offset, side, side), radius))
+			{
+				g.FillPath(brush, path);
+			}
+		}
+
+		/// <summary>
+		/// Рисование полосы "Свернуть"
+		/// </summary>
+		private static void DrawMinimize(Graphics g, Brush brush, RectangleF area)
+		{
+			float width = area.Width * 0.78f;
+			float height = area.Height * 0.16f;
+			float left = area.Left + (area.Width - width) / 2f;
+			float top = area.Top + (area.Height - height) / 2f;
+
+			using (GraphicsPath path = RoundedRectangle.Create(
+				new RectangleF(left, top, width, height), height / 2f))
 			{
 				g.FillPath(brush, path);
 			}

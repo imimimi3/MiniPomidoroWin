@@ -50,6 +50,21 @@ namespace MiniPomidoroWin.Forms
 		public event EventHandler? TimerFinished;
 
 		/// <summary>
+		/// Запрос на сворачивание приложения в трей
+		/// </summary>
+		public event EventHandler? CollapseRequested;
+
+		/// <summary>
+		/// Таймер запущен или стоит на паузе
+		/// </summary>
+		public bool IsTimerActive => this.circularTimer.IsRunning || this.circularTimer.IsPaused;
+
+		/// <summary>
+		/// Оставшееся время
+		/// </summary>
+		public TimeSpan TimeLeft => this.circularTimer.TimeLeft;
+
+		/// <summary>
 		/// Запуск обратного отсчёта
 		/// </summary>
 		public void StartTimer(TimeSpan duration)
@@ -172,6 +187,14 @@ namespace MiniPomidoroWin.Forms
 		private void btnStop_Click(object? sender, EventArgs e)
 		{
 			this.StopTimer();
+		}
+
+		/// <summary>
+		/// Сворачивание в трей
+		/// </summary>
+		private void btnCollapse_Click(object? sender, EventArgs e)
+		{
+			this.CollapseRequested?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>

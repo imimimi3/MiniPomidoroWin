@@ -1,3 +1,4 @@
+using MiniPomidoroWin.Constants;
 using MiniPomidoroWin.Forms;
 using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Service;
@@ -13,9 +14,41 @@ namespace MiniPomidoroWin
 		private readonly AudioService _audioService = new AudioService();
 
 		/// <summary>
+		/// Обновление подсказки значка в трее
+		/// </summary>
+		private readonly System.Windows.Forms.Timer _trayTooltipTimer =
+			new System.Windows.Forms.Timer { Interval = AppConstants.TrayTooltipUpdateIntervalMs };
+
+		/// <summary>
+		/// Напоминание, когда таймер не запущен
+		/// </summary>
+		private readonly System.Windows.Forms.Timer _reminderTimer =
+			new System.Windows.Forms.Timer { Interval = AppConstants.TrayReminderIntervalMs };
+
+		/// <summary>
 		/// Мини-окно с таймером обратного отсчёта
 		/// </summary>
 		private MiniTimerForm? _miniTimerForm;
+
+		/// <summary>
+		/// Сообщение об окончании таймера
+		/// </summary>
+		private NotificationForm? _notificationForm;
+
+		/// <summary>
+		/// Приложение свёрнуто в трей
+		/// </summary>
+		private bool _isInTray;
+
+		/// <summary>
+		/// Приложение завершает работу
+		/// </summary>
+		private bool _exitRequested;
+
+		/// <summary>
+		/// Ждём окончания звука, чтобы показать сообщение
+		/// </summary>
+		private bool _waitingForSoundNotification;
 
 		/// <summary>
 		/// Конструктор формы
@@ -29,16 +62,54 @@ namespace MiniPomidoroWin
 			this.minutesField.ValueChanged += this.TimeField_ValueChanged;
 			this.secondsField.ValueChanged += this.TimeField_ValueChanged;
 
+			this._trayTooltipTimer.Tick += this.TrayTooltipTimer_Tick;
+			this._reminderTimer.Tick += this.ReminderTimer_Tick;
+			this._audioService.PlaybackFinished += this.AudioService_PlaybackFinished;
+
+			this._trayTooltipTimer.Start();
+			this._reminderTimer.Start();
+
 			this.ApplyLocalization();
 			this.UpdateStartButtonState();
 		}
 
 		/// <summary>
-		/// Освобождение сервиса звука
+		/// Перехват закрытия главной формы: крестик сворачивает приложение в трей
+		/// </summary>
+		protected override void OnFormClosing(FormClosingEventArgs e)
+		{
+			if (!this._exitRequested && e.CloseReason == CloseReason.UserClosing)
+			{
+				e.Cancel = true;
+				this.HideMainFormToTray();
+				return;
+			}
+
+			this._exitRequested = true;
+
+			base.OnFormClosing(e);
+		}
+
+		/// <summary>
+		/// Освобождение ресурсов
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
+			this._trayTooltipTimer.Stop();
+			this._trayTooltipTimer.Dispose();
+
+			this._reminderTimer.Stop();
+			this._reminderTimer.Dispose();
+
+			this._audioService.PlaybackFinished -= this.AudioService_PlaybackFinished;
 			this._audioService.Dispose();
+
+			if (this._notificationForm != null && !this._notificationForm.IsDisposed)
+			{
+				this._notificationForm.Close();
+			}
+
+			this.notifyIcon1.Visible = false;
 
 			base.OnFormClosed(e);
 		}
@@ -49,10 +120,14 @@ namespace MiniPomidoroWin
 		protected override void ApplyLocalization()
 		{
 			this.Text = AppStrings.MainForm_Title;
-			this.notifyIcon1.Text = AppStrings.MainForm_Title;
+
+			this.notifyMenuShow.Text = AppStrings.Tray_Show;
+			this.notifyMenuExit.Text = AppStrings.Tray_Exit;
 
 			this.minutesField.Caption = AppStrings.MainForm_MinutesShort;
 			this.secondsField.Caption = AppStrings.MainForm_SecondsShort;
+
+			this.UpdateTrayText();
 		}
 
 		/// <summary>
@@ -102,6 +177,7 @@ namespace MiniPomidoroWin
 				return;
 			}
 
+			this._waitingForSoundNotification = false;
 			this._audioService.Stop();
 
 			this.ShowMiniTimer(TimeSpan.FromSeconds(seconds));
@@ -114,7 +190,15 @@ namespace MiniPomidoroWin
 		{
 			if (this._miniTimerForm != null && !this._miniTimerForm.IsDisposed)
 			{
+				this._isInTray = false;
+
+				this.Hide();
+				this._miniTimerForm.Show();
 				this._miniTimerForm.Activate();
+				this._miniTimerForm.BringToFront();
+
+				this.UpdateTrayText();
+
 				return;
 			}
 
@@ -123,11 +207,16 @@ namespace MiniPomidoroWin
 			this._miniTimerForm = new MiniTimerForm(screen);
 			this._miniTimerForm.TimerFinished += this.MiniTimerForm_TimerFinished;
 			this._miniTimerForm.FormClosed += this.MiniTimerForm_FormClosed;
+			this._miniTimerForm.CollapseRequested += this.MiniTimerForm_CollapseRequested;
+
+			this._isInTray = false;
 
 			this.Hide();
 
 			this._miniTimerForm.Show();
 			this._miniTimerForm.StartTimer(duration);
+
+			this.UpdateTrayText();
 		}
 
 		/// <summary>
@@ -139,6 +228,28 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
+		/// Сворачивание мини-окна в трей
+		/// </summary>
+		private void MiniTimerForm_CollapseRequested(object? sender, EventArgs e)
+		{
+			if (this._miniTimerForm == null || this._miniTimerForm.IsDisposed)
+			{
+				return;
+			}
+
+			this._isInTray = true;
+
+			this._miniTimerForm.Hide();
+
+			if (this.Visible)
+			{
+				this.Hide();
+			}
+
+			this.UpdateTrayText();
+		}
+
+		/// <summary>
 		/// Возврат на главную форму после закрытия мини-окна
 		/// </summary>
 		private void MiniTimerForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -147,17 +258,178 @@ namespace MiniPomidoroWin
 			{
 				this._miniTimerForm.TimerFinished -= this.MiniTimerForm_TimerFinished;
 				this._miniTimerForm.FormClosed -= this.MiniTimerForm_FormClosed;
+				this._miniTimerForm.CollapseRequested -= this.MiniTimerForm_CollapseRequested;
 				this._miniTimerForm = null;
 			}
 
-			if (this.IsDisposed || this.Disposing)
+			if (this._exitRequested || this.IsDisposed || this.Disposing)
+			{
+				return;
+			}
+
+			this.UpdateTrayText();
+
+			if (this._isInTray)
 			{
 				return;
 			}
 
 			this.Show();
+
+			if (this.WindowState == FormWindowState.Minimized)
+			{
+				this.WindowState = FormWindowState.Normal;
+			}
+
 			this.Activate();
+			this.BringToFront();
 			this.UpdateStartButtonState();
+		}
+
+		/// <summary>
+		/// Обновление подсказки значка в трее
+		/// </summary>
+		private void TrayTooltipTimer_Tick(object? sender, EventArgs e)
+		{
+			this.UpdateTrayText();
+		}
+
+		/// <summary>
+		/// Текст подсказки: оставшееся время или «Готов к труду»
+		/// </summary>
+		private void UpdateTrayText()
+		{
+			string text = AppStrings.Tray_Ready;
+
+			if (this._miniTimerForm is { IsDisposed: false } miniTimer && miniTimer.IsTimerActive)
+			{
+				text = string.Format(AppStrings.Tray_TimeLeftFormat, FormatTime(miniTimer.TimeLeft));
+			}
+
+			if (!string.Equals(this.notifyIcon1.Text, text, StringComparison.Ordinal))
+			{
+				this.notifyIcon1.Text = text;
+			}
+		}
+
+		/// <summary>
+		/// Форматирование оставшегося времени
+		/// </summary>
+		private static string FormatTime(TimeSpan value)
+		{
+			return value.TotalHours >= 1
+				? value.ToString(@"hh\:mm\:ss")
+				: value.ToString(@"mm\:ss");
+		}
+
+		/// <summary>
+		/// Напоминание раз в 10 минут, если таймер не запущен
+		/// </summary>
+		private void ReminderTimer_Tick(object? sender, EventArgs e)
+		{
+			if (this._miniTimerForm is { IsDisposed: false } miniTimer && miniTimer.IsTimerActive)
+			{
+				return;
+			}
+
+			this.ShowTrayNotification(AppStrings.Tray_Reminder);
+		}
+
+		/// <summary>
+		/// Всплывающее уведомление из трея
+		/// </summary>
+		private void ShowTrayNotification(string message)
+		{
+			this.notifyIcon1.BalloonTipTitle = AppStrings.MainForm_Title;
+			this.notifyIcon1.BalloonTipText = message;
+			this.notifyIcon1.BalloonTipIcon = ToolTipIcon.Info;
+			this.notifyIcon1.ShowBalloonTip(5000);
+		}
+
+		/// <summary>
+		/// Двойной клик по значку в трее
+		/// </summary>
+		private void notifyIcon1_MouseDoubleClick(object? sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				this.RestoreFromTray();
+			}
+		}
+
+		/// <summary>
+		/// Пункт меню «Развернуть»
+		/// </summary>
+		private void notifyMenuShow_Click(object? sender, EventArgs e)
+		{
+			this.RestoreFromTray();
+		}
+
+		/// <summary>
+		/// Пункт меню «Выход»
+		/// </summary>
+		private void notifyMenuExit_Click(object? sender, EventArgs e)
+		{
+			this._exitRequested = true;
+			this.notifyIcon1.Visible = false;
+
+			Application.Exit();
+		}
+
+		/// <summary>
+		/// Разворачивание приложения из трея
+		/// </summary>
+		private void RestoreFromTray()
+		{
+			if (this._exitRequested)
+			{
+				return;
+			}
+
+			this._isInTray = false;
+
+			if (this._miniTimerForm is { IsDisposed: false } miniTimer)
+			{
+				if (!miniTimer.Visible)
+				{
+					miniTimer.Show();
+				}
+
+				if (miniTimer.WindowState == FormWindowState.Minimized)
+				{
+					miniTimer.WindowState = FormWindowState.Normal;
+				}
+
+				miniTimer.Activate();
+				miniTimer.BringToFront();
+
+				this.UpdateTrayText();
+
+				return;
+			}
+
+			this.Show();
+
+			if (this.WindowState == FormWindowState.Minimized)
+			{
+				this.WindowState = FormWindowState.Normal;
+			}
+
+			this.Activate();
+			this.BringToFront();
+
+			this.UpdateStartButtonState();
+			this.UpdateTrayText();
+		}
+
+		/// <summary>
+		/// Скрытие главной формы в трей
+		/// </summary>
+		private void HideMainFormToTray()
+		{
+			this._isInTray = true;
+			this.Hide();
+			this.UpdateTrayText();
 		}
 
 		/// <summary>
@@ -165,6 +437,8 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void PlayEndSound()
 		{
+			this._waitingForSoundNotification = true;
+
 			// Файл мог исчезнуть с диска — тогда звучит встроенная мелодия
 			if (SettingsService.HasCustomSound && SettingsService.CustomSoundPath is string path)
 			{
@@ -184,7 +458,95 @@ namespace MiniPomidoroWin
 				}
 			}
 
-			this._audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
+			try
+			{
+				this._audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
+			}
+			catch
+			{
+				// Даже если звук не запустился, сообщение должно появиться
+				this._waitingForSoundNotification = false;
+				this.ShowTimerFinishedNotification();
+			}
+		}
+
+		/// <summary>
+		/// Звук закончился
+		/// </summary>
+		private void AudioService_PlaybackFinished(object? sender, EventArgs e)
+		{
+			if (this.IsDisposed || this.Disposing)
+			{
+				return;
+			}
+
+			if (this.InvokeRequired)
+			{
+				if (this.IsHandleCreated)
+				{
+					this.BeginInvoke(new Action(this.OnSoundPlaybackFinished));
+				}
+
+				return;
+			}
+
+			this.OnSoundPlaybackFinished();
+		}
+
+		/// <summary>
+		/// Показ сообщения после звука
+		/// </summary>
+		private void OnSoundPlaybackFinished()
+		{
+			if (!this._waitingForSoundNotification)
+			{
+				return;
+			}
+
+			this._waitingForSoundNotification = false;
+
+			this.ShowTimerFinishedNotification();
+		}
+
+		/// <summary>
+		/// Сообщение «Пора переключиться!» поверх всех окон
+		/// </summary>
+		private void ShowTimerFinishedNotification()
+		{
+			if (this._exitRequested || this.IsDisposed || this.Disposing)
+			{
+				return;
+			}
+
+			if (this._notificationForm != null && !this._notificationForm.IsDisposed)
+			{
+				this._notificationForm.Close();
+			}
+
+			NotificationForm notification = new NotificationForm();
+			notification.FormClosed += this.NotificationForm_FormClosed;
+
+			this._notificationForm = notification;
+
+			notification.Show();
+			notification.Activate();
+			notification.BringToFront();
+		}
+
+		/// <summary>
+		/// Закрытие сообщения
+		/// </summary>
+		private void NotificationForm_FormClosed(object? sender, FormClosedEventArgs e)
+		{
+			if (sender is NotificationForm notification)
+			{
+				notification.FormClosed -= this.NotificationForm_FormClosed;
+			}
+
+			if (ReferenceEquals(this._notificationForm, sender))
+			{
+				this._notificationForm = null;
+			}
 		}
 
 		/// <summary>

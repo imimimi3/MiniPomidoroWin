@@ -70,6 +70,15 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на OK.
+        /// </summary>
+        internal static string Common_Ok {
+            get {
+                return ResourceManager.GetString("Common_Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Внимание.
         /// </summary>
         internal static string Common_WarningTitle {
@@ -170,6 +179,15 @@ namespace MiniPomidoroWin.Forms.Localization {
         internal static string MainForm_Title {
             get {
                 return ResourceManager.GetString("MainForm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Пора переключиться!.
+        /// </summary>
+        internal static string Notification_TimeToSwitch {
+            get {
+                return ResourceManager.GetString("Notification_TimeToSwitch", resourceCulture);
             }
         }
         
@@ -278,6 +296,51 @@ namespace MiniPomidoroWin.Forms.Localization {
         internal static string SettingsForm_Title {
             get {
                 return ResourceManager.GetString("SettingsForm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Выход.
+        /// </summary>
+        internal static string Tray_Exit {
+            get {
+                return ResourceManager.GetString("Tray_Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Готов к труду.
+        /// </summary>
+        internal static string Tray_Ready {
+            get {
+                return ResourceManager.GetString("Tray_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Ты не забыл про меня?.
+        /// </summary>
+        internal static string Tray_Reminder {
+            get {
+                return ResourceManager.GetString("Tray_Reminder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Развернуть.
+        /// </summary>
+        internal static string Tray_Show {
+            get {
+                return ResourceManager.GetString("Tray_Show", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Осталось: {0}.
+        /// </summary>
+        internal static string Tray_TimeLeftFormat {
+            get {
+                return ResourceManager.GetString("Tray_TimeLeftFormat", resourceCulture);
             }
         }
     }

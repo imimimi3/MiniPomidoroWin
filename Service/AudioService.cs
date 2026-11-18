@@ -29,6 +29,21 @@ namespace MiniPomidoroWin.Service
 		private bool _disposed;
 
 		/// <summary>
+		/// Номер текущего воспроизведения
+		/// </summary>
+		private int _playbackId;
+
+		/// <summary>
+		/// Номер воспроизведения, остановленного вручную
+		/// </summary>
+		private int _stoppedPlaybackId = -1;
+
+		/// <summary>
+		/// Событие естественного окончания воспроизведения
+		/// </summary>
+		public event EventHandler? PlaybackFinished;
+
+		/// <summary>
 		/// Воспроизведение пользовательского файла
 		/// </summary>
 		public void PlayCustomFile(string filePath)
@@ -58,6 +73,8 @@ namespace MiniPomidoroWin.Service
 
 			lock (this._sync)
 			{
+				this._stoppedPlaybackId = this._playbackId;
+
 				output = this._output;
 				reader = this._reader;
 
@@ -88,6 +105,7 @@ namespace MiniPomidoroWin.Service
 		private void Play(WaveStream reader)
 		{
 			IWavePlayer output = new WaveOut();
+			int playbackId;
 
 			try
 			{
@@ -112,12 +130,16 @@ namespace MiniPomidoroWin.Service
 					return;
 				}
 
+				playbackId = ++this._playbackId;
+
 				previousOutput = this._output;
 				previousReader = this._reader;
 
 				this._output = output;
 				this._reader = reader;
 			}
+
+			output.PlaybackStopped += (sender, args) => this.OnPlaybackStopped(playbackId);
 
 			// Предыдущий звук останавливаем только после подмены полей,
 			// чтобы его остановка не могла затронуть новый поток
@@ -132,6 +154,40 @@ namespace MiniPomidoroWin.Service
 				this.Stop();
 				throw;
 			}
+		}
+
+		/// <summary>
+		/// Обработка окончания воспроизведения
+		/// </summary>
+		private void OnPlaybackStopped(int playbackId)
+		{
+			IWavePlayer? output;
+			WaveStream? reader;
+
+			lock (this._sync)
+			{
+				if (this._disposed ||
+					playbackId != this._playbackId ||
+					playbackId == this._stoppedPlaybackId)
+				{
+					return;
+				}
+
+				this._stoppedPlaybackId = playbackId;
+
+				output = this._output;
+				reader = this._reader;
+
+				this._output = null;
+				this._reader = null;
+			}
+
+			// Здесь воспроизведение уже остановилось естественным образом,
+			// поэтому дополнительный Stop не нужен
+			output?.Dispose();
+			reader?.Dispose();
+
+			this.PlaybackFinished?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>
