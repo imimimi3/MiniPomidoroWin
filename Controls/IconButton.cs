@@ -107,10 +107,11 @@ namespace MiniPomidoroWin.Controls
 			Graphics g = e.Graphics;
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 
-			float size = Math.Min(this.Width, this.Height) * iconScale;
+			Rectangle surface = this.ClientRectangle;
+			float size = Math.Min(surface.Width, surface.Height) * iconScale;
 			RectangleF area = new RectangleF(
-				(this.Width - size) / 2f,
-				(this.Height - size) / 2f,
+				surface.Left + ((surface.Width - size) / 2f),
+				surface.Top + ((surface.Height - size) / 2f),
 				size,
 				size);
 
@@ -144,14 +145,11 @@ namespace MiniPomidoroWin.Controls
 		/// </summary>
 		private static void DrawPlay(Graphics g, Brush brush, RectangleF area)
 		{
-			// Небольшой сдвиг вправо компенсирует оптический центр треугольника
-			float offset = area.Width * 0.06f;
-
 			PointF[] points =
 			{
-				new PointF(area.Left + offset, area.Top),
-				new PointF(area.Right + offset, area.Top + area.Height / 2f),
-				new PointF(area.Left + offset, area.Bottom)
+				new PointF(area.Left, area.Top),
+				new PointF(area.Right, area.Top + (area.Height / 2f)),
+				new PointF(area.Left, area.Bottom)
 			};
 
 			g.FillPolygon(brush, points);

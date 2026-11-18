@@ -3,6 +3,8 @@ using MiniPomidoroWin.Forms;
 using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Service;
 using MiniPomidoroWin.Themes;
+using System.Diagnostics;
+using System.Media;
 
 namespace MiniPomidoroWin
 {
@@ -46,11 +48,6 @@ namespace MiniPomidoroWin
 		private bool _exitRequested;
 
 		/// <summary>
-		/// Ждём окончания звука, чтобы показать сообщение
-		/// </summary>
-		private bool _waitingForSoundNotification;
-
-		/// <summary>
 		/// Конструктор формы
 		/// </summary>
 		public MainForm()
@@ -64,7 +61,6 @@ namespace MiniPomidoroWin
 
 			this._trayTooltipTimer.Tick += this.TrayTooltipTimer_Tick;
 			this._reminderTimer.Tick += this.ReminderTimer_Tick;
-			this._audioService.PlaybackFinished += this.AudioService_PlaybackFinished;
 
 			this._trayTooltipTimer.Start();
 			this._reminderTimer.Start();
@@ -101,7 +97,6 @@ namespace MiniPomidoroWin
 			this._reminderTimer.Stop();
 			this._reminderTimer.Dispose();
 
-			this._audioService.PlaybackFinished -= this.AudioService_PlaybackFinished;
 			this._audioService.Dispose();
 
 			if (this._notificationForm != null && !this._notificationForm.IsDisposed)
@@ -177,7 +172,6 @@ namespace MiniPomidoroWin
 				return;
 			}
 
-			this._waitingForSoundNotification = false;
 			this._audioService.Stop();
 
 			this.ShowMiniTimer(TimeSpan.FromSeconds(seconds));
@@ -224,6 +218,8 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void MiniTimerForm_TimerFinished(object? sender, EventArgs e)
 		{
+			// Сначала сообщение, только потом звук
+			this.ShowTimerFinishedNotification();
 			this.PlayEndSound();
 		}
 
@@ -437,8 +433,6 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void PlayEndSound()
 		{
-			this._waitingForSoundNotification = true;
-
 			// Файл мог исчезнуть с диска — тогда звучит встроенная мелодия
 			if (SettingsService.HasCustomSound && SettingsService.CustomSoundPath is string path)
 			{
@@ -462,50 +456,12 @@ namespace MiniPomidoroWin
 			{
 				this._audioService.PlayEmbedded(Properties.Resources.DefaultEndTimerMusic);
 			}
-			catch
+			catch (Exception ex)
 			{
-				// Даже если звук не запустился, сообщение должно появиться
-				this._waitingForSoundNotification = false;
-				this.ShowTimerFinishedNotification();
+				// Мелодия не заиграла — хотя бы системный звук и запись в лог
+				Trace.TraceError("Не удалось воспроизвести встроенную мелодию: {0}", ex);
+				SystemSounds.Exclamation.Play();
 			}
-		}
-
-		/// <summary>
-		/// Звук закончился
-		/// </summary>
-		private void AudioService_PlaybackFinished(object? sender, EventArgs e)
-		{
-			if (this.IsDisposed || this.Disposing)
-			{
-				return;
-			}
-
-			if (this.InvokeRequired)
-			{
-				if (this.IsHandleCreated)
-				{
-					this.BeginInvoke(new Action(this.OnSoundPlaybackFinished));
-				}
-
-				return;
-			}
-
-			this.OnSoundPlaybackFinished();
-		}
-
-		/// <summary>
-		/// Показ сообщения после звука
-		/// </summary>
-		private void OnSoundPlaybackFinished()
-		{
-			if (!this._waitingForSoundNotification)
-			{
-				return;
-			}
-
-			this._waitingForSoundNotification = false;
-
-			this.ShowTimerFinishedNotification();
 		}
 
 		/// <summary>
@@ -529,6 +485,7 @@ namespace MiniPomidoroWin
 			this._notificationForm = notification;
 
 			notification.Show();
+			notification.Refresh();
 			notification.Activate();
 			notification.BringToFront();
 		}

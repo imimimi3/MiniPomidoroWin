@@ -22,6 +22,13 @@
     <PackageReference Include="NAudio" Version="3.3.0" />
   </ItemGroup>
 
+  <!-- Конфигурация встраивается в сборку: в single-file рядом с exe её нет -->
+  <ItemGroup>
+    <EmbeddedResource Include="App.config">
+      <LogicalName>MiniPomidoroWin.App.config</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Forms\Localization\AppStrings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -57,5 +64,17 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
+  <!--
+    Один exe в publish: файл конфигурации не копируется рядом с приложением.
+    Вместо него AppConfigBootstrap подключает конфигурацию, встроенную в сборку.
+  -->
+  <Target Name="RemoveAppConfigFromSingleFile"
+          AfterTargets="FindAppConfigFile"
+          BeforeTargets="_CopyAppConfigFile">
+    <ItemGroup>
+      <AppConfigWithTargetPath Remove="@(AppConfigWithTargetPath)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
