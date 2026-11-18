@@ -33,6 +33,9 @@ namespace MiniPomidoroWin
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			notifyIcon1 = new NotifyIcon(components);
+			notifyMenu = new ContextMenuStrip(components);
+			notifyMenuShow = new ToolStripMenuItem();
+			notifyMenuExit = new ToolStripMenuItem();
 			minutesField = new TimeField();
 			secondsField = new TimeField();
 			btnStart = new IconButton();
@@ -42,9 +45,32 @@ namespace MiniPomidoroWin
 			// 
 			// notifyIcon1
 			// 
+			notifyIcon1.ContextMenuStrip = notifyMenu;
 			notifyIcon1.Icon = (Icon)resources.GetObject("notifyIcon1.Icon");
 			notifyIcon1.Text = "MiniPomidoro";
 			notifyIcon1.Visible = true;
+			notifyIcon1.MouseDoubleClick += notifyIcon1_MouseDoubleClick;
+			// 
+			// notifyMenu
+			// 
+			notifyMenu.Items.AddRange(new ToolStripItem[] { notifyMenuShow, notifyMenuExit });
+			notifyMenu.Name = "notifyMenu";
+			notifyMenu.ShowImageMargin = false;
+			notifyMenu.Size = new Size(160, 48);
+			// 
+			// notifyMenuShow
+			// 
+			notifyMenuShow.Name = "notifyMenuShow";
+			notifyMenuShow.Size = new Size(159, 22);
+			notifyMenuShow.Text = "Развернуть";
+			notifyMenuShow.Click += notifyMenuShow_Click;
+			// 
+			// notifyMenuExit
+			// 
+			notifyMenuExit.Name = "notifyMenuExit";
+			notifyMenuExit.Size = new Size(159, 22);
+			notifyMenuExit.Text = "Выход";
+			notifyMenuExit.Click += notifyMenuExit_Click;
 			// 
 			// minutesField
 			// 
@@ -133,6 +159,9 @@ namespace MiniPomidoroWin
 		#endregion
 
 		private NotifyIcon notifyIcon1;
+		private ContextMenuStrip notifyMenu;
+		private ToolStripMenuItem notifyMenuShow;
+		private ToolStripMenuItem notifyMenuExit;
 		private TimeField minutesField;
 		private TimeField secondsField;
 		private IconButton btnStart;

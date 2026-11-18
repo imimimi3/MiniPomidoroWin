@@ -12,5 +12,15 @@ namespace MiniPomidoroWin.Constants
 		/// Отступ мини-окна от краёв экрана
 		/// </summary>
 		public const int MiniFormScreenMargin = 12;
+
+		/// <summary>
+		/// Интервал обновления подсказки значка в трее
+		/// </summary>
+		public const int TrayTooltipUpdateIntervalMs = 1000;
+
+		/// <summary>
+		/// Интервал напоминания, когда таймер не запущен: 10 минут
+		/// </summary>
+		public const int TrayReminderIntervalMs = 10 * 60 * 1000;
 	}
 }
