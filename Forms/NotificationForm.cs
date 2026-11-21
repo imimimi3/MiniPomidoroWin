@@ -1,4 +1,7 @@
-﻿using MiniPomidoroWin.Forms.Localization;
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
+using MiniPomidoroWin.Forms.Localization;
 using MiniPomidoroWin.Themes;
 
 namespace MiniPomidoroWin.Forms

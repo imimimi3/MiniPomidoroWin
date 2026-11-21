@@ -1,4 +1,7 @@
-﻿using MiniPomidoroWin.Service;
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
+using MiniPomidoroWin.Service;
 
 namespace MiniPomidoroWin.Forms
 {

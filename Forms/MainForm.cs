@@ -1,3 +1,6 @@
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
 using MiniPomidoroWin.Constants;
 using MiniPomidoroWin.Forms;
 using MiniPomidoroWin.Forms.Localization;
@@ -11,44 +14,44 @@ namespace MiniPomidoroWin
 	public partial class MainForm : LocalizedForm
 	{
 		/// <summary>
-		/// Сервис звука
+		/// РЎРµСЂРІРёСЃ Р·РІСѓРєР°
 		/// </summary>
 		private readonly AudioService _audioService = new AudioService();
 
 		/// <summary>
-		/// Обновление подсказки значка в трее
+		/// РћР±РЅРѕРІР»РµРЅРёРµ РїРѕРґСЃРєР°Р·РєРё Р·РЅР°С‡РєР° РІ С‚СЂРµРµ
 		/// </summary>
 		private readonly System.Windows.Forms.Timer _trayTooltipTimer =
 			new System.Windows.Forms.Timer { Interval = AppConstants.TrayTooltipUpdateIntervalMs };
 
 		/// <summary>
-		/// Напоминание, когда таймер не запущен
+		/// РќР°РїРѕРјРёРЅР°РЅРёРµ, РєРѕРіРґР° С‚Р°Р№РјРµСЂ РЅРµ Р·Р°РїСѓС‰РµРЅ
 		/// </summary>
 		private readonly System.Windows.Forms.Timer _reminderTimer =
 			new System.Windows.Forms.Timer { Interval = AppConstants.TrayReminderIntervalMs };
 
 		/// <summary>
-		/// Мини-окно с таймером обратного отсчёта
+		/// РњРёРЅРё-РѕРєРЅРѕ СЃ С‚Р°Р№РјРµСЂРѕРј РѕР±СЂР°С‚РЅРѕРіРѕ РѕС‚СЃС‡С‘С‚Р°
 		/// </summary>
 		private MiniTimerForm? _miniTimerForm;
 
 		/// <summary>
-		/// Сообщение об окончании таймера
+		/// РЎРѕРѕР±С‰РµРЅРёРµ РѕР± РѕРєРѕРЅС‡Р°РЅРёРё С‚Р°Р№РјРµСЂР°
 		/// </summary>
 		private NotificationForm? _notificationForm;
 
 		/// <summary>
-		/// Приложение свёрнуто в трей
+		/// РџСЂРёР»РѕР¶РµРЅРёРµ СЃРІС‘СЂРЅСѓС‚Рѕ РІ С‚СЂРµР№
 		/// </summary>
 		private bool _isInTray;
 
 		/// <summary>
-		/// Приложение завершает работу
+		/// РџСЂРёР»РѕР¶РµРЅРёРµ Р·Р°РІРµСЂС€Р°РµС‚ СЂР°Р±РѕС‚Сѓ
 		/// </summary>
 		private bool _exitRequested;
 
 		/// <summary>
-		/// Конструктор формы
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ С„РѕСЂРјС‹
 		/// </summary>
 		public MainForm()
 		{
@@ -70,7 +73,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Перехват закрытия главной формы: крестик сворачивает приложение в трей
+		/// РџРµСЂРµС…РІР°С‚ Р·Р°РєСЂС‹С‚РёСЏ РіР»Р°РІРЅРѕР№ С„РѕСЂРјС‹: РєСЂРµСЃС‚РёРє СЃРІРѕСЂР°С‡РёРІР°РµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ РІ С‚СЂРµР№
 		/// </summary>
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
@@ -87,7 +90,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Освобождение ресурсов
+		/// РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЂРµСЃСѓСЂСЃРѕРІ
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
@@ -110,7 +113,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Применение локализованных строк к элементам формы
+		/// РџСЂРёРјРµРЅРµРЅРёРµ Р»РѕРєР°Р»РёР·РѕРІР°РЅРЅС‹С… СЃС‚СЂРѕРє Рє СЌР»РµРјРµРЅС‚Р°Рј С„РѕСЂРјС‹
 		/// </summary>
 		protected override void ApplyLocalization()
 		{
@@ -126,7 +129,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Изменение минут или секунд
+		/// РР·РјРµРЅРµРЅРёРµ РјРёРЅСѓС‚ РёР»Рё СЃРµРєСѓРЅРґ
 		/// </summary>
 		private void TimeField_ValueChanged(object? sender, EventArgs e)
 		{
@@ -134,7 +137,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Общее время в секундах
+		/// РћР±С‰РµРµ РІСЂРµРјСЏ РІ СЃРµРєСѓРЅРґР°С…
 		/// </summary>
 		private int GetTotalSeconds()
 		{
@@ -142,7 +145,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Доступность кнопки Старт
+		/// Р”РѕСЃС‚СѓРїРЅРѕСЃС‚СЊ РєРЅРѕРїРєРё РЎС‚Р°СЂС‚
 		/// </summary>
 		private void UpdateStartButtonState()
 		{
@@ -154,7 +157,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Обработка нажатия кнопки Старт: запуск таймера в мини-окне
+		/// РћР±СЂР°Р±РѕС‚РєР° РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё РЎС‚Р°СЂС‚: Р·Р°РїСѓСЃРє С‚Р°Р№РјРµСЂР° РІ РјРёРЅРё-РѕРєРЅРµ
 		/// </summary>
 		private void btnStart_Click(object? sender, EventArgs e)
 		{
@@ -178,7 +181,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Показ мини-окна и скрытие главной формы
+		/// РџРѕРєР°Р· РјРёРЅРё-РѕРєРЅР° Рё СЃРєСЂС‹С‚РёРµ РіР»Р°РІРЅРѕР№ С„РѕСЂРјС‹
 		/// </summary>
 		private void ShowMiniTimer(TimeSpan duration)
 		{
@@ -214,17 +217,17 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Окончание таймера в мини-окне
+		/// РћРєРѕРЅС‡Р°РЅРёРµ С‚Р°Р№РјРµСЂР° РІ РјРёРЅРё-РѕРєРЅРµ
 		/// </summary>
 		private void MiniTimerForm_TimerFinished(object? sender, EventArgs e)
 		{
-			// Сначала сообщение, только потом звук
+			// РЎРЅР°С‡Р°Р»Р° СЃРѕРѕР±С‰РµРЅРёРµ, С‚РѕР»СЊРєРѕ РїРѕС‚РѕРј Р·РІСѓРє
 			this.ShowTimerFinishedNotification();
 			this.PlayEndSound();
 		}
 
 		/// <summary>
-		/// Сворачивание мини-окна в трей
+		/// РЎРІРѕСЂР°С‡РёРІР°РЅРёРµ РјРёРЅРё-РѕРєРЅР° РІ С‚СЂРµР№
 		/// </summary>
 		private void MiniTimerForm_CollapseRequested(object? sender, EventArgs e)
 		{
@@ -246,7 +249,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Возврат на главную форму после закрытия мини-окна
+		/// Р’РѕР·РІСЂР°С‚ РЅР° РіР»Р°РІРЅСѓСЋ С„РѕСЂРјСѓ РїРѕСЃР»Рµ Р·Р°РєСЂС‹С‚РёСЏ РјРёРЅРё-РѕРєРЅР°
 		/// </summary>
 		private void MiniTimerForm_FormClosed(object? sender, FormClosedEventArgs e)
 		{
@@ -283,7 +286,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Обновление подсказки значка в трее
+		/// РћР±РЅРѕРІР»РµРЅРёРµ РїРѕРґСЃРєР°Р·РєРё Р·РЅР°С‡РєР° РІ С‚СЂРµРµ
 		/// </summary>
 		private void TrayTooltipTimer_Tick(object? sender, EventArgs e)
 		{
@@ -291,7 +294,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Текст подсказки: оставшееся время или «Готов к труду»
+		/// РўРµРєСЃС‚ РїРѕРґСЃРєР°Р·РєРё: РѕСЃС‚Р°РІС€РµРµСЃСЏ РІСЂРµРјСЏ РёР»Рё В«Р“РѕС‚РѕРІ Рє С‚СЂСѓРґСѓВ»
 		/// </summary>
 		private void UpdateTrayText()
 		{
@@ -309,7 +312,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Форматирование оставшегося времени
+		/// Р¤РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РѕСЃС‚Р°РІС€РµРіРѕСЃСЏ РІСЂРµРјРµРЅРё
 		/// </summary>
 		private static string FormatTime(TimeSpan value)
 		{
@@ -319,7 +322,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Напоминание раз в 10 минут, если таймер не запущен
+		/// РќР°РїРѕРјРёРЅР°РЅРёРµ СЂР°Р· РІ 10 РјРёРЅСѓС‚, РµСЃР»Рё С‚Р°Р№РјРµСЂ РЅРµ Р·Р°РїСѓС‰РµРЅ
 		/// </summary>
 		private void ReminderTimer_Tick(object? sender, EventArgs e)
 		{
@@ -332,7 +335,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Всплывающее уведомление из трея
+		/// Р’СЃРїР»С‹РІР°СЋС‰РµРµ СѓРІРµРґРѕРјР»РµРЅРёРµ РёР· С‚СЂРµСЏ
 		/// </summary>
 		private void ShowTrayNotification(string message)
 		{
@@ -343,7 +346,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Двойной клик по значку в трее
+		/// Р”РІРѕР№РЅРѕР№ РєР»РёРє РїРѕ Р·РЅР°С‡РєСѓ РІ С‚СЂРµРµ
 		/// </summary>
 		private void notifyIcon1_MouseDoubleClick(object? sender, MouseEventArgs e)
 		{
@@ -354,7 +357,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Пункт меню «Развернуть»
+		/// РџСѓРЅРєС‚ РјРµРЅСЋ В«Р Р°Р·РІРµСЂРЅСѓС‚СЊВ»
 		/// </summary>
 		private void notifyMenuShow_Click(object? sender, EventArgs e)
 		{
@@ -362,7 +365,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Пункт меню «Выход»
+		/// РџСѓРЅРєС‚ РјРµРЅСЋ В«Р’С‹С…РѕРґВ»
 		/// </summary>
 		private void notifyMenuExit_Click(object? sender, EventArgs e)
 		{
@@ -373,7 +376,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Разворачивание приложения из трея
+		/// Р Р°Р·РІРѕСЂР°С‡РёРІР°РЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ РёР· С‚СЂРµСЏ
 		/// </summary>
 		private void RestoreFromTray()
 		{
@@ -419,7 +422,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Скрытие главной формы в трей
+		/// РЎРєСЂС‹С‚РёРµ РіР»Р°РІРЅРѕР№ С„РѕСЂРјС‹ РІ С‚СЂРµР№
 		/// </summary>
 		private void HideMainFormToTray()
 		{
@@ -429,11 +432,11 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Воспроизведение мелодии окончания таймера
+		/// Р’РѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёРµ РјРµР»РѕРґРёРё РѕРєРѕРЅС‡Р°РЅРёСЏ С‚Р°Р№РјРµСЂР°
 		/// </summary>
 		private void PlayEndSound()
 		{
-			// Файл мог исчезнуть с диска — тогда звучит встроенная мелодия
+			// Р¤Р°Р№Р» РјРѕРі РёСЃС‡РµР·РЅСѓС‚СЊ СЃ РґРёСЃРєР° вЂ” С‚РѕРіРґР° Р·РІСѓС‡РёС‚ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РјРµР»РѕРґРёСЏ
 			if (SettingsService.HasCustomSound && SettingsService.CustomSoundPath is string path)
 			{
 				try
@@ -458,14 +461,14 @@ namespace MiniPomidoroWin
 			}
 			catch (Exception ex)
 			{
-				// Мелодия не заиграла — хотя бы системный звук и запись в лог
-				Trace.TraceError("Не удалось воспроизвести встроенную мелодию: {0}", ex);
+				// РњРµР»РѕРґРёСЏ РЅРµ Р·Р°РёРіСЂР°Р»Р° вЂ” С…РѕС‚СЏ Р±С‹ СЃРёСЃС‚РµРјРЅС‹Р№ Р·РІСѓРє Рё Р·Р°РїРёСЃСЊ РІ Р»РѕРі
+				Trace.TraceError("РќРµ СѓРґР°Р»РѕСЃСЊ РІРѕСЃРїСЂРѕРёР·РІРµСЃС‚Рё РІСЃС‚СЂРѕРµРЅРЅСѓСЋ РјРµР»РѕРґРёСЋ: {0}", ex);
 				SystemSounds.Exclamation.Play();
 			}
 		}
 
 		/// <summary>
-		/// Сообщение «Пора переключиться!» поверх всех окон
+		/// РЎРѕРѕР±С‰РµРЅРёРµ В«РџРѕСЂР° РїРµСЂРµРєР»СЋС‡РёС‚СЊСЃСЏ!В» РїРѕРІРµСЂС… РІСЃРµС… РѕРєРѕРЅ
 		/// </summary>
 		private void ShowTimerFinishedNotification()
 		{
@@ -491,7 +494,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Закрытие сообщения
+		/// Р—Р°РєСЂС‹С‚РёРµ СЃРѕРѕР±С‰РµРЅРёСЏ
 		/// </summary>
 		private void NotificationForm_FormClosed(object? sender, FormClosedEventArgs e)
 		{
@@ -507,7 +510,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Обработчик нажатия кнопки Настройки
+		/// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё РќР°СЃС‚СЂРѕР№РєРё
 		/// </summary>
 		private void btnSettings_Click(object? sender, EventArgs e)
 		{
@@ -518,7 +521,7 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Обработчик нажатия кнопки Информация
+		/// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё РРЅС„РѕСЂРјР°С†РёСЏ
 		/// </summary>
 		private void btnInfo_Click(object? sender, EventArgs e)
 		{

@@ -1,4 +1,7 @@
-﻿using System.Drawing.Drawing2D;
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
+using System.Drawing.Drawing2D;
 using MiniPomidoroWin.Constants;
 using MiniPomidoroWin.Controls;
 using MiniPomidoroWin.Forms.Localization;

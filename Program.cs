@@ -1,3 +1,6 @@
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
 using MiniPomidoroWin.Forms;
 using MiniPomidoroWin.Service;
 
@@ -11,15 +14,15 @@ namespace MiniPomidoroWin
 		[STAThread]
 		static void Main()
 		{
-			// В single-file сборке конфигурация извлекается из ресурсов
-			// до первого обращения к настройкам приложения
+			// Р’ single-file СЃР±РѕСЂРєРµ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РёР·РІР»РµРєР°РµС‚СЃСЏ РёР· СЂРµСЃСѓСЂСЃРѕРІ
+			// РґРѕ РїРµСЂРІРѕРіРѕ РѕР±СЂР°С‰РµРЅРёСЏ Рє РЅР°СЃС‚СЂРѕР№РєР°Рј РїСЂРёР»РѕР¶РµРЅРёСЏ
 			AppConfigBootstrap.Initialize();
 
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize();
 
-			// Применение сохранённого языка интерфейса до создания форм
+			// РџСЂРёРјРµРЅРµРЅРёРµ СЃРѕС…СЂР°РЅС‘РЅРЅРѕРіРѕ СЏР·С‹РєР° РёРЅС‚РµСЂС„РµР№СЃР° РґРѕ СЃРѕР·РґР°РЅРёСЏ С„РѕСЂРј
 			LocalizationService.Instance.Initialize();
 
 			Application.Run(new MainForm());

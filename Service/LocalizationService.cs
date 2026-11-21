@@ -1,4 +1,7 @@
-﻿using System;
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;

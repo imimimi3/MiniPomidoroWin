@@ -1,3 +1,6 @@
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -6,34 +9,34 @@ using System.Reflection;
 namespace MiniPomidoroWin.Service
 {
 	/// <summary>
-	/// Подключение конфигурации приложения в single-file сборке.
-	/// В single-file приложении рядом с exe нет файла конфигурации, поэтому
-	/// он извлекается из ресурсов в папку локальных данных и подключается вручную.
+	/// РџРѕРґРєР»СЋС‡РµРЅРёРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРёР»РѕР¶РµРЅРёСЏ РІ single-file СЃР±РѕСЂРєРµ.
+	/// Р’ single-file РїСЂРёР»РѕР¶РµРЅРёРё СЂСЏРґРѕРј СЃ exe РЅРµС‚ С„Р°Р№Р»Р° РєРѕРЅС„РёРіСѓСЂР°С†РёРё, РїРѕСЌС‚РѕРјСѓ
+	/// РѕРЅ РёР·РІР»РµРєР°РµС‚СЃСЏ РёР· СЂРµСЃСѓСЂСЃРѕРІ РІ РїР°РїРєСѓ Р»РѕРєР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С… Рё РїРѕРґРєР»СЋС‡Р°РµС‚СЃСЏ РІСЂСѓС‡РЅСѓСЋ.
 	/// </summary>
 	internal static class AppConfigBootstrap
 	{
 		/// <summary>
-		/// Имя папки приложения в локальных данных
+		/// РРјСЏ РїР°РїРєРё РїСЂРёР»РѕР¶РµРЅРёСЏ РІ Р»РѕРєР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…
 		/// </summary>
 		private const string ApplicationFolderName = "MiniPomidoroWin";
 
 		/// <summary>
-		/// Имя файла конфигурации, которое ожидает System.Configuration
+		/// РРјСЏ С„Р°Р№Р»Р° РєРѕРЅС„РёРіСѓСЂР°С†РёРё, РєРѕС‚РѕСЂРѕРµ РѕР¶РёРґР°РµС‚ System.Configuration
 		/// </summary>
 		private const string ConfigFileName = "MiniPomidoroWin.dll.config";
 
 		/// <summary>
-		/// Имя встроенного ресурса с конфигурацией
+		/// РРјСЏ РІСЃС‚СЂРѕРµРЅРЅРѕРіРѕ СЂРµСЃСѓСЂСЃР° СЃ РєРѕРЅС„РёРіСѓСЂР°С†РёРµР№
 		/// </summary>
 		private const string ConfigResourceName = "MiniPomidoroWin.App.config";
 
 		/// <summary>
-		/// Признак выполненной инициализации
+		/// РџСЂРёР·РЅР°Рє РІС‹РїРѕР»РЅРµРЅРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 		/// </summary>
 		private static bool _initialized;
 
 		/// <summary>
-		/// Подключение конфигурации. Вызывать до первого обращения к Properties.Settings
+		/// РџРѕРґРєР»СЋС‡РµРЅРёРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё. Р’С‹Р·С‹РІР°С‚СЊ РґРѕ РїРµСЂРІРѕРіРѕ РѕР±СЂР°С‰РµРЅРёСЏ Рє Properties.Settings
 		/// </summary>
 		public static void Initialize()
 		{
@@ -55,16 +58,16 @@ namespace MiniPomidoroWin.Service
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("Не удалось подключить конфигурацию из локальных данных: {0}", ex);
+				Trace.TraceError("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРєР»СЋС‡РёС‚СЊ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РёР· Р»РѕРєР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…: {0}", ex);
 
 				try
 				{
-					// Резервный путь: временный каталог пользователя
+					// Р РµР·РµСЂРІРЅС‹Р№ РїСѓС‚СЊ: РІСЂРµРјРµРЅРЅС‹Р№ РєР°С‚Р°Р»РѕРі РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 					UseConfig(ExtractConfig(Path.Combine(Path.GetTempPath(), ApplicationFolderName)));
 				}
 				catch (Exception fallbackError)
 				{
-					Trace.TraceError("Не удалось подключить резервную конфигурацию: {0}", fallbackError);
+					Trace.TraceError("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРєР»СЋС‡РёС‚СЊ СЂРµР·РµСЂРІРЅСѓСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ: {0}", fallbackError);
 				}
 			}
 		}
@@ -77,7 +80,7 @@ namespace MiniPomidoroWin.Service
 		}
 
 		/// <summary>
-		/// Извлечение встроенной конфигурации в папку локальных данных
+		/// РР·РІР»РµС‡РµРЅРёРµ РІСЃС‚СЂРѕРµРЅРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РІ РїР°РїРєСѓ Р»РѕРєР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…
 		/// </summary>
 		private static string ExtractConfig(string directory)
 		{
@@ -102,7 +105,7 @@ namespace MiniPomidoroWin.Service
 		}
 
 		/// <summary>
-		/// Чтение встроенной конфигурации
+		/// Р§С‚РµРЅРёРµ РІСЃС‚СЂРѕРµРЅРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 		/// </summary>
 		private static byte[] ReadEmbeddedConfig()
 		{
@@ -112,7 +115,7 @@ namespace MiniPomidoroWin.Service
 
 			if (stream == null)
 			{
-				// Конфигурация без секций: значения по умолчанию берутся из атрибутов настроек
+				// РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ Р±РµР· СЃРµРєС†РёР№: Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Р±РµСЂСѓС‚СЃСЏ РёР· Р°С‚СЂРёР±СѓС‚РѕРІ РЅР°СЃС‚СЂРѕРµРє
 				return "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration />"u8.ToArray();
 			}
 
@@ -123,7 +126,7 @@ namespace MiniPomidoroWin.Service
 		}
 
 		/// <summary>
-		/// Совпадает ли содержимое файла с ожидаемым
+		/// РЎРѕРІРїР°РґР°РµС‚ Р»Рё СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р° СЃ РѕР¶РёРґР°РµРјС‹Рј
 		/// </summary>
 		private static bool IsSameContent(string path, byte[] content)
 		{
@@ -138,14 +141,14 @@ namespace MiniPomidoroWin.Service
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("Не удалось прочитать файл конфигурации {0}: {1}", path, ex);
+				Trace.TraceError("РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ С„Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё {0}: {1}", path, ex);
 				return false;
 			}
 		}
 
 		/// <summary>
-		/// Сброс закэшированных путей System.Configuration,
-		/// чтобы конфигурация читалась из нового файла
+		/// РЎР±СЂРѕСЃ Р·Р°РєСЌС€РёСЂРѕРІР°РЅРЅС‹С… РїСѓС‚РµР№ System.Configuration,
+		/// С‡С‚РѕР±С‹ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ С‡РёС‚Р°Р»Р°СЃСЊ РёР· РЅРѕРІРѕРіРѕ С„Р°Р№Р»Р°
 		/// </summary>
 		private static void ResetConfigurationManager()
 		{

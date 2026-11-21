@@ -1,4 +1,7 @@
-﻿using NAudio.Wave;
+﻿// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 imimimi3
+
+using NAudio.Wave;
 using System.IO;
 
 namespace MiniPomidoroWin.Service
