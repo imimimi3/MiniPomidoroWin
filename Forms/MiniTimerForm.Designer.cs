@@ -90,8 +90,8 @@
 			// 
 			// MiniTimerForm
 			// 
-			AutoScaleDimensions = new SizeF(13F, 32F);
-			AutoScaleMode = AutoScaleMode.Font;
+			AutoScaleDimensions = new SizeF(192F, 192F);
+			AutoScaleMode = AutoScaleMode.Dpi;
 			BackColor = Color.FromArgb(34, 40, 49);
 			ClientSize = new Size(280, 220);
 			Controls.Add(btnCollapse);
