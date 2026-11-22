@@ -43,6 +43,16 @@ namespace MiniPomidoroWin.Controls
 		private const int LargeStep = 10;
 
 		/// <summary>
+		/// Цифры, введённые с клавиатуры
+		/// </summary>
+		private string editBuffer = string.Empty;
+
+		/// <summary>
+		/// Поле редактируется с клавиатуры
+		/// </summary>
+		private bool isEditing;
+
+		/// <summary>
 		/// Форматирование текста по центру без переноса
 		/// </summary>
 		private static readonly StringFormat CenteredFormat = new StringFormat
@@ -177,6 +187,100 @@ namespace MiniPomidoroWin.Controls
 				this.caption = newValue;
 				this.Invalidate();
 			}
+		}
+
+		/// <summary>
+		/// Максимальное количество цифр в значении
+		/// </summary>
+		private int GetMaxDigits()
+		{
+			return Math.Max(1, this.maximum.ToString().Length);
+		}
+
+		/// <summary>
+		/// Текст значения с учётом ввода
+		/// </summary>
+		private string GetDisplayText()
+		{
+			return this.isEditing && this.editBuffer.Length > 0
+				? this.editBuffer
+				: this.currentValue.ToString();
+		}
+
+		/// <summary>
+		/// Применение значения с ограничением диапазоном
+		/// </summary>
+		private void ApplyValue(int value)
+		{
+			int clamped = Math.Clamp(value, this.minimum, this.maximum);
+
+			if (this.currentValue == clamped)
+			{
+				return;
+			}
+
+			this.currentValue = clamped;
+			this.Invalidate();
+			this.ValueChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		/// <summary>
+		/// Завершение ввода
+		/// </summary>
+		private void CommitEditing()
+		{
+			if (!this.isEditing)
+			{
+				return;
+			}
+
+			this.isEditing = false;
+			this.editBuffer = string.Empty;
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Добавление цифры к вводимому значению
+		/// </summary>
+		private void AppendDigit(char digit)
+		{
+			this.isEditing = true;
+
+			string candidate = this.editBuffer + digit;
+
+			// Переполнение разрядов или диапазона — начинаем число заново
+			if (candidate.Length > this.GetMaxDigits() || int.Parse(candidate) > this.maximum)
+			{
+				candidate = digit.ToString();
+			}
+
+			this.editBuffer = candidate;
+			this.ApplyValue(int.Parse(candidate));
+
+			// Приводим буфер к реальному значению: "05" -> "5", "60" -> "0"
+			this.editBuffer = this.currentValue.ToString();
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Удаление последней введённой цифры
+		/// </summary>
+		private void RemoveDigit()
+		{
+			if (!this.isEditing)
+			{
+				this.isEditing = true;
+				this.editBuffer = this.currentValue.ToString();
+			}
+
+			this.editBuffer = this.editBuffer.Length > 0
+				? this.editBuffer[..^1]
+				: string.Empty;
+
+			this.ApplyValue(this.editBuffer.Length > 0 ? int.Parse(this.editBuffer) : 0);
+
+			this.editBuffer = this.currentValue.ToString();
+			this.Invalidate();
 		}
 
 		/// <summary>
@@ -339,6 +443,9 @@ namespace MiniPomidoroWin.Controls
 				case Keys.PageDown:
 				case Keys.Home:
 				case Keys.End:
+				case Keys.Back:
+				case Keys.Enter:
+				case Keys.Escape:
 					return true;
 			}
 
@@ -351,6 +458,28 @@ namespace MiniPomidoroWin.Controls
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			base.OnKeyDown(e);
+
+			switch (e.KeyCode)
+			{
+				case Keys.Back:
+					this.RemoveDigit();
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+					return;
+
+				case Keys.Enter:
+					this.CommitEditing();
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+					return;
+
+				case Keys.Escape:
+					// Отмена ввода: остаётся последнее применённое значение
+					this.CommitEditing();
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+					return;
+			}
 
 			switch (e.KeyCode)
 			{
@@ -386,21 +515,47 @@ namespace MiniPomidoroWin.Controls
 		}
 
 		/// <summary>
-		/// Получение фокуса
+		/// Начало ввода при получении фокуса
 		/// </summary>
 		protected override void OnGotFocus(EventArgs e)
 		{
 			base.OnGotFocus(e);
+
+			this.isEditing = true;
+			this.editBuffer = string.Empty;
 			this.Invalidate();
 		}
 
 		/// <summary>
-		/// Потеря фокуса
+		/// Завершение ввода при потере фокуса
 		/// </summary>
 		protected override void OnLostFocus(EventArgs e)
 		{
+			this.CommitEditing();
+
 			base.OnLostFocus(e);
 			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Ввод цифр с клавиатуры
+		/// </summary>
+		protected override void OnKeyPress(KeyPressEventArgs e)
+		{
+			base.OnKeyPress(e);
+
+			if (char.IsControl(e.KeyChar))
+			{
+				return;
+			}
+
+			if (char.IsDigit(e.KeyChar))
+			{
+				this.AppendDigit(e.KeyChar);
+			}
+
+			// Буквы и знаки в поле времени не нужны
+			e.Handled = true;
 		}
 
 		/// <summary>
@@ -441,7 +596,7 @@ namespace MiniPomidoroWin.Controls
 			}
 
 			// Значение
-			string text = this.currentValue.ToString();
+			string text = this.GetDisplayText();
 			RectangleF valueBounds = new RectangleF(
 				bounds.Left,
 				bounds.Top + bounds.Height * 0.26f,
