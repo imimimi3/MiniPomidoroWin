@@ -1,4 +1,5 @@
-﻿using MiniPomidoroWin.Service;
+﻿using MiniPomidoroWin.Controls;
+using MiniPomidoroWin.Service;
 
 namespace MiniPomidoroWin.Forms
 {
@@ -23,6 +24,17 @@ namespace MiniPomidoroWin.Forms
 		}
 
 		/// <summary>
+		/// Подгонка формы под экран, а текста — под элементы
+		/// </summary>
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+
+			ScreenFit.FitToWorkingArea(this);
+			AutoFitText.Apply(this);
+		}
+
+		/// <summary>
 		/// Отписка от события смены языка
 		/// </summary>
 		protected override void OnFormClosed(FormClosedEventArgs e)
@@ -38,6 +50,7 @@ namespace MiniPomidoroWin.Forms
 		private void LocalizationService_LanguageChanged(object? sender, EventArgs e)
 		{
 			this.ApplyLocalization();
+			AutoFitText.Apply(this);
 		}
 	}
 }

@@ -40,6 +40,15 @@ namespace MiniPomidoroWin.Controls
 		private bool _pressed;
 
 		/// <summary>
+		/// Минимальный размер шрифта при подгонке текста
+		/// </summary>
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		/// <summary>
+		/// Минимальный размер шрифта при подгонке текста
+		/// </summary>
+		public float MinimumFontSize { get; set; } = AutoFitText.MinimumFontSize;
+
+		/// <summary>
 		/// Толщина рамки
 		/// </summary>
 		[DefaultValue(0)]
@@ -338,7 +347,12 @@ namespace MiniPomidoroWin.Controls
 
 			Color color = this.Enabled ? this.ForeColor : Theme.FieldCaption;
 
-			TextRenderer.DrawText(graphics, this.Text, this.Font, surface, color, flags);
+			Rectangle textBounds = Rectangle.Inflate(surface, -this._borderSize - 6, -this._borderSize - 4);
+
+			using (Font font = AutoFitText.FitSingleLine(this.Font, this.Text, textBounds.Size, flags, this.MinimumFontSize))
+			{
+				TextRenderer.DrawText(graphics, this.Text, font, textBounds, color, flags);
+			}
 		}
 
 		/// <summary>
