@@ -63,6 +63,8 @@ namespace MiniPomidoroWin
 			this._reminderTimer.Tick += this.ReminderTimer_Tick;
 
 			this._trayTooltipTimer.Start();
+
+			// Приложение стартует свободным: отсчёт напоминания начинается сразу
 			this._reminderTimer.Start();
 
 			this.ApplyLocalization();
@@ -182,6 +184,9 @@ namespace MiniPomidoroWin
 		/// </summary>
 		private void ShowMiniTimer(TimeSpan duration)
 		{
+			// Пока сессия идёт, напоминание не нужно: отсчёт начнётся после её окончания
+			this._reminderTimer.Stop();
+
 			if (this._miniTimerForm != null && !this._miniTimerForm.IsDisposed)
 			{
 				this._isInTray = false;
@@ -263,6 +268,9 @@ namespace MiniPomidoroWin
 				return;
 			}
 
+			// Сессия закончилась — отсчёт напоминания начинается заново
+			this.RestartReminderTimer();
+
 			this.UpdateTrayText();
 
 			if (this._isInTray)
@@ -319,16 +327,44 @@ namespace MiniPomidoroWin
 		}
 
 		/// <summary>
-		/// Напоминание раз в 10 минут, если таймер не запущен
+		/// Таймер помодоро идёт или стоит на паузе
+		/// </summary>
+		private bool IsTimerActive()
+		{
+			return this._miniTimerForm is { IsDisposed: false } miniTimer
+				&& miniTimer.IsTimerActive;
+		}
+
+		/// <summary>
+		/// Перезапуск отсчёта напоминания: полный интервал от текущего момента
+		/// </summary>
+		private void RestartReminderTimer()
+		{
+			this._reminderTimer.Stop();
+
+			if (!this.IsTimerActive())
+			{
+				this._reminderTimer.Start();
+			}
+		}
+
+		/// <summary>
+		/// Напоминание через 10 минут простоя, если таймер не запущен
 		/// </summary>
 		private void ReminderTimer_Tick(object? sender, EventArgs e)
 		{
-			if (this._miniTimerForm is { IsDisposed: false } miniTimer && miniTimer.IsTimerActive)
+			// Тик одноразовый: следующее напоминание — через полный интервал от показа
+			this._reminderTimer.Stop();
+
+			if (this.IsTimerActive())
 			{
+				// Сессия уже идёт: отсчёт запустится при её завершении
 				return;
 			}
 
 			this.ShowTrayNotification(AppStrings.Tray_Reminder);
+
+			this._reminderTimer.Start();
 		}
 
 		/// <summary>
@@ -416,6 +452,12 @@ namespace MiniPomidoroWin
 
 			this.UpdateStartButtonState();
 			this.UpdateTrayText();
+
+			// Отсчёт мог быть выключен тиком во время сессии — включаем, но не сбрасываем
+			if (!this.IsTimerActive() && !this._reminderTimer.Enabled)
+			{
+				this._reminderTimer.Start();
+			}
 		}
 
 		/// <summary>
