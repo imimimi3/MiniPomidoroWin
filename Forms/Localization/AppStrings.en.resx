@@ -164,6 +164,18 @@ The default sound will be used.</value>
   <data name="Notification_TimeToSwitch" xml:space="preserve">
     <value>Time to switch!</value>
   </data>
+  <data name="SettingsForm_AutoStartDisabled" xml:space="preserve">
+    <value>Launch with Windows: no</value>
+  </data>
+  <data name="SettingsForm_AutoStartEnabled" xml:space="preserve">
+    <value>Launch with Windows: yes</value>
+  </data>
+  <data name="SettingsForm_AutoStartError" xml:space="preserve">
+    <value>Failed to change autostart: {0}</value>
+  </data>
+  <data name="SettingsForm_AutoStartUnsupported" xml:space="preserve">
+    <value>Autostart is unavailable for this build</value>
+  </data>
   <data name="SettingsForm_ChooseSoundButton" xml:space="preserve">
     <value>Choose end sound</value>
   </data>
@@ -196,6 +208,9 @@ The default sound will be used.</value>
   </data>
   <data name="SettingsForm_SoundSelected" xml:space="preserve">
     <value>The custom sound has been selected and saved.</value>
+  </data>
+  <data name="SettingsForm_StartupSection" xml:space="preserve">
+    <value>Startup</value>
   </data>
   <data name="SettingsForm_Title" xml:space="preserve">
     <value>Settings</value>
