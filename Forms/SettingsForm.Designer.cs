@@ -36,6 +36,9 @@
 			pnlDivider = new Panel();
 			lblLanguageSection = new Label();
 			btnLanguage = new MiniPomidoroWin.Controls.ModernButton();
+			lblStartupSection = new Label();
+			btnAutoStart = new MiniPomidoroWin.Controls.ModernButton();
+			pnlStartupDivider = new Panel();
 			SuspendLayout();
 			// 
 			// lblSoundSection
@@ -130,12 +133,51 @@
 			btnLanguage.UseVisualStyleBackColor = false;
 			btnLanguage.Click += btnLanguage_Click;
 			// 
+			// pnlStartupDivider
+			// 
+			pnlStartupDivider.BackColor = Color.FromArgb(58, 68, 82);
+			pnlStartupDivider.Location = new Point(40, 488);
+			pnlStartupDivider.Name = "pnlStartupDivider";
+			pnlStartupDivider.Size = new Size(586, 1);
+			pnlStartupDivider.TabIndex = 7;
+			// 
+			// lblStartupSection
+			// 
+			lblStartupSection.AutoSize = true;
+			lblStartupSection.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+			lblStartupSection.ForeColor = Color.FromArgb(138, 147, 165);
+			lblStartupSection.Location = new Point(40, 510);
+			lblStartupSection.Name = "lblStartupSection";
+			lblStartupSection.Size = new Size(120, 41);
+			lblStartupSection.TabIndex = 8;
+			lblStartupSection.Text = "Автозапуск";
+			// 
+			// btnAutoStart
+			// 
+			btnAutoStart.BackColor = Color.FromArgb(44, 52, 64);
+			btnAutoStart.BorderRadius = 40;
+			btnAutoStart.FlatAppearance.MouseDownBackColor = Color.FromArgb(36, 44, 55);
+			btnAutoStart.FlatAppearance.MouseOverBackColor = Color.FromArgb(58, 68, 82);
+			btnAutoStart.FlatStyle = FlatStyle.Flat;
+			btnAutoStart.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+			btnAutoStart.ForeColor = Color.White;
+			btnAutoStart.Location = new Point(40, 568);
+			btnAutoStart.Name = "btnAutoStart";
+			btnAutoStart.Size = new Size(586, 80);
+			btnAutoStart.TabIndex = 9;
+			btnAutoStart.Text = "Запускать вместе с Windows: нет";
+			btnAutoStart.UseVisualStyleBackColor = false;
+			btnAutoStart.Click += btnAutoStart_Click;
+			// 
 			// SettingsForm
 			// 
 			AutoScaleDimensions = new SizeF(192F, 192F);
 			AutoScaleMode = AutoScaleMode.Dpi;
 			BackColor = Color.FromArgb(34, 40, 49);
-			ClientSize = new Size(666, 504);
+			ClientSize = new Size(666, 676);
+			Controls.Add(btnAutoStart);
+			Controls.Add(lblStartupSection);
+			Controls.Add(pnlStartupDivider);
 			Controls.Add(btnLanguage);
 			Controls.Add(lblLanguageSection);
 			Controls.Add(pnlDivider);
@@ -164,5 +206,8 @@
 		private Panel pnlDivider;
 		private Label lblLanguageSection;
 		private Controls.ModernButton btnLanguage;
+		private Label lblStartupSection;
+		private Controls.ModernButton btnAutoStart;
+		private Panel pnlStartupDivider;
 	}
 }

@@ -164,6 +164,18 @@
   <data name="Notification_TimeToSwitch" xml:space="preserve">
     <value>Пора переключиться!</value>
   </data>
+  <data name="SettingsForm_AutoStartDisabled" xml:space="preserve">
+    <value>Запускать вместе с Windows: нет</value>
+  </data>
+  <data name="SettingsForm_AutoStartEnabled" xml:space="preserve">
+    <value>Запускать вместе с Windows: да</value>
+  </data>
+  <data name="SettingsForm_AutoStartError" xml:space="preserve">
+    <value>Не удалось изменить автозапуск: {0}</value>
+  </data>
+  <data name="SettingsForm_AutoStartUnsupported" xml:space="preserve">
+    <value>Автозапуск недоступен для этой сборки</value>
+  </data>
   <data name="SettingsForm_ChooseSoundButton" xml:space="preserve">
     <value>Выбор мелодии окончания</value>
   </data>
@@ -196,6 +208,9 @@
   </data>
   <data name="SettingsForm_SoundSelected" xml:space="preserve">
     <value>Пользовательский звук выбран и сохранен.</value>
+  </data>
+  <data name="SettingsForm_StartupSection" xml:space="preserve">
+    <value>Автозапуск</value>
   </data>
   <data name="SettingsForm_Title" xml:space="preserve">
     <value>Настройки</value>

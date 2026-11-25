@@ -192,6 +192,42 @@ namespace MiniPomidoroWin.Forms.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Запускать вместе с Windows: нет.
+        /// </summary>
+        internal static string SettingsForm_AutoStartDisabled {
+            get {
+                return ResourceManager.GetString("SettingsForm_AutoStartDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Запускать вместе с Windows: да.
+        /// </summary>
+        internal static string SettingsForm_AutoStartEnabled {
+            get {
+                return ResourceManager.GetString("SettingsForm_AutoStartEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Не удалось изменить автозапуск: {0}.
+        /// </summary>
+        internal static string SettingsForm_AutoStartError {
+            get {
+                return ResourceManager.GetString("SettingsForm_AutoStartError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Автозапуск недоступен для этой сборки.
+        /// </summary>
+        internal static string SettingsForm_AutoStartUnsupported {
+            get {
+                return ResourceManager.GetString("SettingsForm_AutoStartUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Выбор мелодии окончания.
         /// </summary>
         internal static string SettingsForm_ChooseSoundButton {
@@ -287,6 +323,15 @@ namespace MiniPomidoroWin.Forms.Localization {
         internal static string SettingsForm_SoundSelected {
             get {
                 return ResourceManager.GetString("SettingsForm_SoundSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Автозапуск.
+        /// </summary>
+        internal static string SettingsForm_StartupSection {
+            get {
+                return ResourceManager.GetString("SettingsForm_StartupSection", resourceCulture);
             }
         }
         

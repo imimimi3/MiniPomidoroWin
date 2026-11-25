@@ -48,10 +48,25 @@ namespace MiniPomidoroWin
 		private bool _exitRequested;
 
 		/// <summary>
+		/// Окно запущено скрытым (автозагрузка вместе с Windows)
+		/// </summary>
+		private bool _startHidden;
+
+		/// <summary>
 		/// Конструктор формы
 		/// </summary>
-		public MainForm()
+		public MainForm() : this(false)
 		{
+		}
+
+		/// <summary>
+		/// Конструктор формы с возможностью старта в трее
+		/// </summary>
+		public MainForm(bool startHidden)
+		{
+			this._startHidden = startHidden;
+			this._isInTray = startHidden;
+
 			InitializeComponent();
 
 			this.BackColor = Theme.FormBackground;
@@ -69,6 +84,23 @@ namespace MiniPomidoroWin
 
 			this.ApplyLocalization();
 			this.UpdateStartButtonState();
+		}
+
+		/// <summary>
+		/// Старт в трее без показа главного окна
+		/// </summary>
+		protected override void SetVisibleCore(bool value)
+		{
+			if (this._startHidden)
+			{
+				this._startHidden = false;
+
+				base.SetVisibleCore(false);
+
+				return;
+			}
+
+			base.SetVisibleCore(value);
 		}
 
 		/// <summary>
@@ -468,6 +500,19 @@ namespace MiniPomidoroWin
 			this._isInTray = true;
 			this.Hide();
 			this.UpdateTrayText();
+		}
+
+		/// <summary>
+		/// Показ окна при повторном запуске приложения
+		/// </summary>
+		public void ActivateFromSecondInstance()
+		{
+			if (this._exitRequested || this.IsDisposed || this.Disposing)
+			{
+				return;
+			}
+
+			this.RestoreFromTray();
 		}
 
 		/// <summary>
